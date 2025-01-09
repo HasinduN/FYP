@@ -5,6 +5,7 @@ import Menu from "./components/menu";
 import MenuManagement from "./components/menuManagement";
 import Orders from "./components/orders";
 import AddOrder from "./components/addOrder";
+import Reports from "./components/reports";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/menu-management" element={<MenuManagement />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/orders/add" element={<AddOrder />} />
+                <Route path="/reports" element={<Reports />} />
             </Routes>
         </Router>
     );
