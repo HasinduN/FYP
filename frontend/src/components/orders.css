@@ -1,49 +1,42 @@
-/* Orders.css */
 .orders-container {
     padding: 20px;
     font-family: Arial, sans-serif;
 }
 
+.orders-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
 .order-card {
-    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 20px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+    padding: 15px;
+    text-align: left;
 }
 
-.order-header {
+.order-card h3 {
+    margin: 0;
+    margin-bottom: 10px;
     font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 8px;
 }
 
-.order-type {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
+.completed-order {
+    border-left: 5px solid #28a745;
 }
 
-.order-total {
-    font-size: 16px;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 12px;
+.ongoing-order {
+    border-left: 5px solid #ffc107;
 }
 
-.order-items {
-    margin-top: 12px;
-}
-
-.order-items ul {
-    list-style-type: none;
+.order-card ul {
+    list-style: none;
     padding: 0;
+    margin: 10px 0;
 }
 
-.order-items li {
-    font-size: 14px;
-    padding: 4px 0;
-    border-bottom: 1px solid #eaeaea;
+.order-card ul li {
+    margin: 5px 0;
 }

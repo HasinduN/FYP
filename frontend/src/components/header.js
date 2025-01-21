@@ -6,14 +6,15 @@ const Header = () => {
     return (
         <header className="header">
             <Link to="/" className="header-logo">
-                POS System
+                EDEN DINE
             </Link>
             <nav className="nav-links">
-                <Link to="/menu">Menu</Link>
-                <Link to="/menu-management">Menu Management</Link>
-                <Link to="/orders">Orders</Link>
-                <Link to="/orders/add">Add Order</Link>
-                <Link to="/reports">Reports</Link>
+                <Link to="/orders/add">ADD ORDER</Link>
+                <Link to="/menu">MENU</Link>
+                <Link to="/orders">ORDERS</Link>
+                <Link to="/reports">REPORTS</Link>
+                <Link to="/menu-management">MENU MANAGEMENT</Link>
+                <Link to="/inventory-management">INVENTORY MANAGEMENT</Link>
             </nav>
         </header>
     );

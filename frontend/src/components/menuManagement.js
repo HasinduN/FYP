@@ -6,37 +6,59 @@ const MenuManagement = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [newItem, setNewItem] = useState({ name: "", price: "", description: "" });
 
-    useEffect(() => {
-        const fetchMenuItems = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:5000/menu");
-                setMenuItems(response.data);
-            } catch (error) {
-                console.error("Error fetching menu items:", error);
-            }
-        };
-
-        fetchMenuItems();
-    }, []);
-
-    const addMenuItem = async () => {
+    // Function to fetch menu items
+    const fetchMenuItems = async () => {
         try {
-            await axios.post("http://127.0.0.1:5000/menu", newItem);
-            setNewItem({ name: "", price: "", description: "" });
             const response = await axios.get("http://127.0.0.1:5000/menu");
             setMenuItems(response.data);
         } catch (error) {
-            console.error("Error adding menu item:", error);
+            console.error("Error fetching menu items:", error);
         }
     };
 
+    // Fetch menu items when the component loads
+    useEffect(() => {
+        fetchMenuItems();
+    }, []);
+
+    // Function to add a new menu item
+    const addMenuItem = async () => {
+        if (!newItem.name || !newItem.price) {
+            alert("Name and Price are required.");
+            return;
+        }
+
+        try {
+            await axios.post("http://127.0.0.1:5000/menu", {
+                name: newItem.name,
+                price: parseFloat(newItem.price), // Ensure price is a number
+                description: newItem.description || "",
+            });
+            setNewItem({ name: "", price: "", description: "" });
+            fetchMenuItems();
+        } catch (error) {
+            console.error("Error adding menu item:", error);
+            alert("Failed to add menu item.");
+        }
+    };
+
+    // Function to delete a menu item
     const deleteMenuItem = async (id) => {
         try {
-            await axios.delete(`http://127.0.0.1:5000/menu/${id}`);
-            const response = await axios.get("http://127.0.0.1:5000/menu");
-            setMenuItems(response.data);
+            const response = await fetch(`http://127.0.0.1:5000/menu/${id}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                alert("Menu item deleted successfully!");
+                fetchMenuItems(); // Refresh the menu list
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+            }
         } catch (error) {
             console.error("Error deleting menu item:", error);
+            alert("Failed to delete menu item.");
         }
     };
 
@@ -67,23 +89,27 @@ const MenuManagement = () => {
             </div>
             <div className="menu-list">
                 <h3>Existing Menu Items</h3>
-                {menuItems.map((item) => (
-                    <div key={item.id} className="menu-item">
-                        <div>
-                            <strong>{item.name}</strong> - ${item.price.toFixed(2)}
-                            {item.description && <p>{item.description}</p>}
+                {menuItems.length > 0 ? (
+                    menuItems.map((item) => (
+                        <div key={item.id} className="menu-item">
+                            <div>
+                                <strong>{item.name}</strong> - ${item.price.toFixed(2)}
+                                {item.description && <p>{item.description}</p>}
+                            </div>
+                            <div>
+                                <button className="edit-btn">Edit</button>
+                                <button
+                                    className="delete-btn"
+                                    onClick={() => deleteMenuItem(item.id)}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <button className="edit-btn">Edit</button>
-                            <button
-                                className="delete-btn"
-                                onClick={() => deleteMenuItem(item.id)}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p>No menu items available.</p>
+                )}
             </div>
         </div>
     );

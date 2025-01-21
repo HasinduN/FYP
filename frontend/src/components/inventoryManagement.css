@@ -1,9 +1,9 @@
-.menu-container {
+.inventory-container {
     padding: 20px;
     font-family: Arial, sans-serif;
 }
 
-.menu-header {
+.inventory-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,30 +34,17 @@
     background-color: #0056b3;
 }
 
-.menu-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+.inventory-list {
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
 }
 
-.menu-item-card {
+.inventory-item-card {
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 10px;
     text-align: center;
-}
-
-.menu-item-card button {
-    margin-top: 10px;
-    padding: 5px 10px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.menu-item-card button:hover {
-    background-color: #c82333;
+    width: 200px;
 }

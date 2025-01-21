@@ -1,7 +1,7 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-import datetime
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from datetime import datetime
 
 # Database connection URL
 DATABASE_URL = "postgresql://postgres:hasindu123@localhost/pos_system"
@@ -23,13 +23,17 @@ class InventoryItem(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
+    added_date = Column(DateTime, default=datetime.utcnow)
 
 class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String, nullable=False)  # Takeaway or Dine-In
+    table_number = Column(Integer, nullable=True)  # Table number for Dine-In orders
     total_price = Column(Float, nullable=False)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    status = Column(Boolean, default=False)
+    kot_printed = Column(Boolean, default=False)
     order_items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
 class OrderItem(Base):

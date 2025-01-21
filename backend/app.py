@@ -1,82 +1,172 @@
-from flask import Flask, jsonify, request, Response
-from models import session, MenuItem, Order, OrderItem
+from flask import Flask, jsonify, request
+from models import session, MenuItem, InventoryItem, Order, OrderItem
 from flask_cors import CORS
-from sqlalchemy import func
-import csv
-from io import StringIO
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
+# Home route
 @app.route('/')
 def home():
     return "Welcome to the POS System!"
 
+# Route to fetch all menu items
 @app.route('/menu', methods=['GET'])
 def get_menu():
-    menu_items = session.query(MenuItem).all()
-    result = [{"id": item.id, "name": item.name, "price": item.price, "description": item.description} for item in menu_items]
-    return jsonify(result)
+    try:
+        menu_items = session.query(MenuItem).all()
+        result = [
+            {"id": item.id, "name": item.name, "price": item.price, "description": item.description}
+            for item in menu_items
+        ]
+        return jsonify(result)
+    except Exception as e:
+        session.rollback()
+        print(f"Error fetching menu items: {e}")
+        return jsonify({"error": str(e)}), 500
 
+# Route to add a new menu item
 @app.route('/menu', methods=['POST'])
 def add_menu_item():
-    data = request.json
-    new_item = MenuItem(name=data['name'], price=data['price'], description=data.get('description'))
-    session.add(new_item)
-    session.commit()
-    return jsonify({"message": "Menu item added successfully!"}), 201
+    try:
+        data = request.json
+        new_item = MenuItem(name=data['name'], price=data['price'], description=data.get('description'))
+        session.add(new_item)
+        session.commit()
+        return jsonify({"message": "Menu item added successfully!"}), 201
+    except Exception as e:
+        session.rollback()
+        print(f"Error adding menu item: {e}")
+        return jsonify({"error": str(e)}), 500
 
+# Route to update menu item
+@app.route('/menu/<int:item_id>', methods=['PUT'])
+def update_menu_item(item_id):
+    try:
+        data = request.json
+        item = session.query(MenuItem).get(item_id)
+        if not item:
+            return jsonify({"error": "Menu item not found"}), 404
+
+        item.name = data.get('name', item.name)
+        item.price = data.get('price', item.price)
+        item.description = data.get('description', item.description)
+        session.commit()
+        return jsonify({"message": "Menu item updated successfully!"})
+    except Exception as e:
+        session.rollback()
+        print(f"Error updating menu item: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete menu item
+@app.route('/menu/<int:item_id>', methods=['DELETE'])
+def delete_menu_item(item_id):
+    try:
+        item = session.query(MenuItem).get(item_id)
+        if not item:
+            return jsonify({"error": "Menu item not found"}), 404
+
+        # Check if the item is part of any ongoing order
+        ongoing_order = session.query(OrderItem).join(Order).filter(
+            OrderItem.menu_item_id == item_id,
+            Order.status == False  # Ongoing orders only
+        ).first()
+
+        if ongoing_order:
+            return jsonify({"error": "Menu item cannot be deleted as it is part of an ongoing order."}), 400
+
+        session.delete(item)
+        session.commit()
+        return jsonify({"message": "Menu item deleted successfully!"}), 200
+    except Exception as e:
+        session.rollback()
+        print(f"Error deleting menu item: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Route to fetch all inventory items
+@app.route('/inventory', methods=['GET'])
+def get_inventory():
+    try:
+        inventory_items = session.query(InventoryItem).all()
+        result = [
+            {"id": item.id, "name": item.name, "quantity": item.quantity}
+            for item in inventory_items
+        ]
+        return jsonify(result)
+    except Exception as e:
+        session.rollback()
+        print(f"Error fetching inventory items: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Route to add a new inventory item
+@app.route('/inventory', methods=['POST'])
+def add_inventory_item():
+    try:
+        data = request.json
+        new_item = InventoryItem(name=data['name'], quantity=data['quantity'])
+        session.add(new_item)
+        session.commit()
+        return jsonify({"message": "Inventory item added successfully!"}), 201
+    except Exception as e:
+        session.rollback()
+        print(f"Error adding inventory item: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Route to fetch all orders
 @app.route('/orders', methods=['GET'])
 def get_orders():
-    orders = session.query(Order).all()
-    result = [
-        {
-            "id": order.id,
-            "type": order.type,
-            "total_price": order.total_price,
-            "items": [
-                {
-                    "menu_item_id": item.menu_item_id,
-                    "name": item.menu_item.name,
-                    "price": item.menu_item.price,
-                    "quantity": item.quantity
-                }
-                for item in order.order_items
-            ]
-        }
-        for order in orders
-    ]
-    return jsonify(result)
+    try:
+        orders = session.query(Order).all()
+        result = [
+            {
+                "id": order.id,
+                "type": order.type,
+                "total_price": order.total_price,
+                "status": "Completed" if order.status else "Ongoing",
+                "items": [
+                    {
+                        "menu_item_id": item.menu_item_id,
+                        "name": item.menu_item.name,
+                        "price": item.menu_item.price,
+                        "quantity": item.quantity
+                    }
+                    for item in order.order_items
+                ]
+            }
+            for order in orders
+        ]
+        return jsonify(result)
+    except Exception as e:
+        session.rollback()
+        print(f"Error fetching orders: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/orders', methods=['POST'])
 def add_order():
     try:
         data = request.json
-        order_type = data.get('type')
+        order_type = data['type']
+        items = data['items']
         table_number = data.get('table_number')
-        items = data.get('items', [])
 
-        # Validate payload
         if not order_type or not items:
             return jsonify({"error": "Order type and items are required"}), 400
+
         if order_type == "Dine-In" and not table_number:
             return jsonify({"error": "Table number is required for Dine-In orders"}), 400
 
         # Calculate total price
-        total_price = 0
-        for item in items:
-            menu_item = session.query(MenuItem).get(item['menu_item_id'])
-            if not menu_item:
-                return jsonify({"error": f"Menu item with id {item['menu_item_id']} not found"}), 404
-            total_price += menu_item.price * item['quantity']
+        total_price = sum(
+            session.query(MenuItem).get(item['menu_item_id']).price * item['quantity']
+            for item in items
+        )
 
-        # Create order
-        new_order = Order(type=order_type, total_price=total_price)
+        # Create a new order
+        new_order = Order(type=order_type, total_price=total_price, status=False)
         session.add(new_order)
         session.commit()
 
-        # Create order items
+        # Add order items
         for item in items:
             new_order_item = OrderItem(
                 order_id=new_order.id,
@@ -86,89 +176,158 @@ def add_order():
             session.add(new_order_item)
         session.commit()
 
-        return jsonify({"message": "Order added successfully!"}), 201
-
+        # Return the new order ID
+        return jsonify({"message": "Order added successfully!", "order_id": new_order.id}), 201
     except Exception as e:
         session.rollback()
-        print(f"Error: {str(e)}")  # Log the error for debugging
-        return jsonify({"error": "An error occurred while placing the order."}), 500
-
-@app.route('/reports/sales', methods=['GET'])
-def generate_sales_report():
+        print(f"Error adding order: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/orders/ongoing', methods=['GET'])
+def get_ongoing_orders():
     try:
-        # Ensure there is data in the orders table
-        total_revenue = session.query(func.sum(Order.total_price)).scalar() or 0
-        total_orders = session.query(func.count(Order.id)).scalar() or 0
+        # Fetch ongoing orders
+        orders = session.query(Order).filter_by(status=False).all()
+        result = [
+            {
+                "id": order.id,
+                "type": order.type,
+                "table_number": order.table_number,
+                "table_number": order.type == "Dine-In" and order.table_number or None,
+                "total_price": order.total_price,
+                "items": [
+                    {
+                        "menu_item_id": item.menu_item_id,
+                        "name": item.menu_item.name,
+                        "price": item.menu_item.price,
+                        "quantity": item.quantity
+                    }
+                    for item in order.order_items
+                ]
+            }
+            for order in orders
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        session.rollback()
+        print(f"Error fetching ongoing orders: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/orders/<int:order_id>', methods=['PUT'])
+def update_order(order_id):
+    try:
+        data = request.json
+        items = data['items']
 
-        revenue_by_type = session.query(
-            Order.type, func.sum(Order.total_price)
-        ).group_by(Order.type).all()
+        # Fetch the existing order
+        order = session.query(Order).get(order_id)
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+        if order.status:
+            return jsonify({"error": "Cannot update a completed order"}), 400
 
-        if not revenue_by_type:
-            return jsonify({"error": "No sales data available"}), 404
+        # Add new items to the order
+        for item in items:
+            existing_item = session.query(OrderItem).filter_by(
+                order_id=order_id,
+                menu_item_id=item['menu_item_id']
+            ).first()
+            if existing_item:
+                # Update quantity if the item already exists in the order
+                existing_item.quantity += item['quantity']
+            else:
+                # Add a new item
+                new_order_item = OrderItem(
+                    order_id=order_id,
+                    menu_item_id=item['menu_item_id'],
+                    quantity=item['quantity']
+                )
+                session.add(new_order_item)
 
-        report = {
-            "total_revenue": total_revenue,
-            "total_orders": total_orders,
-            "revenue_by_type": [
-                {"type": r[0], "revenue": r[1]} for r in revenue_by_type
+        # Update the total price
+        for item in items:
+            menu_item = session.query(MenuItem).get(item['menu_item_id'])
+            order.total_price += menu_item.price * item['quantity']
+
+        session.commit()
+        return jsonify({"message": "Order updated successfully!"}), 200
+    except Exception as e:
+        session.rollback()
+        print(f"Error updating order: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/orders/<int:order_id>/payment', methods=['POST'])
+def process_payment(order_id):
+    try:
+        data = request.json
+        payment_method = data.get('payment_method')
+
+        if not payment_method or payment_method not in ['cash', 'card']:
+            return jsonify({"error": "Invalid payment method"}), 400
+
+        order = session.query(Order).get(order_id)
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        # Update order status
+        order.status = True
+        session.commit()
+
+        return jsonify({"message": f"Payment successful using {payment_method}!"}), 200
+    except Exception as e:
+        session.rollback()
+        print(f"Error processing payment: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Route to update order status
+@app.route('/orders/<int:order_id>/status', methods=['PUT'])
+def update_order_status(order_id):
+    try:
+        order = session.query(Order).get(order_id)
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        # Mark the order as completed
+        order.status = True
+        session.commit()
+        return jsonify({"message": "Order status updated to completed!"}), 200
+    except Exception as e:
+        session.rollback()
+        print(f"Error updating order status: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/orders/<int:order_id>/kot', methods=['POST'])
+def print_kot(order_id):
+    try:
+        order = session.query(Order).get(order_id)
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        if order.kot_printed:
+            return jsonify({"message": "KOT has already been printed for this order."}), 200
+
+        # Simulate KOT printing (e.g., save to file, send to printer, etc.)
+        kot_details = {
+            "order_id": order.id,
+            "type": order.type,
+            "items": [
+                {
+                    "name": item.menu_item.name,
+                    "quantity": item.quantity
+                }
+                for item in order.order_items
             ]
         }
-        return jsonify(report)
+        print(f"KOT Printed: {kot_details}")  # Placeholder for actual printing logic
+
+        # Mark KOT as printed
+        order.kot_printed = True
+        session.commit()
+
+        return jsonify({"message": "KOT printed successfully!"}), 200
     except Exception as e:
-        print(f"Error generating sales report: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-    
-@app.route('/reports/sales/download', methods=['GET'])
-def download_sales_report():
-    try:
-        # Fetch sales data
-        total_revenue = session.query(func.sum(Order.total_price)).scalar() or 0
-        total_orders = session.query(func.count(Order.id)).scalar() or 0
-        revenue_by_type = session.query(
-            Order.type, func.sum(Order.total_price)
-        ).group_by(Order.type).all()
-
-        # Prepare CSV content
-        output = StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["Metric", "Value"])
-        writer.writerow(["Total Revenue", total_revenue])
-        writer.writerow(["Total Orders", total_orders])
-
-        writer.writerow([])
-        writer.writerow(["Order Type", "Revenue"])
-        for r in revenue_by_type:
-            writer.writerow([r[0], r[1]])
-
-        # Create response
-        output.seek(0)
-        response = Response(output, mimetype="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=sales_report.csv"
-        return response
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@app.route('/reports/inventory/download', methods=['GET'])
-def download_inventory_report():
-    try:
-        # Fetch inventory data
-        inventory_items = session.query(InventoryItem).all()
-
-        # Prepare CSV content
-        output = StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["Item Name", "Quantity", "Status"])
-        for item in inventory_items:
-            status = "Low Stock" if item.quantity < 10 else "Sufficient"
-            writer.writerow([item.name, item.quantity, status])
-
-        # Create response
-        output.seek(0)
-        response = Response(output, mimetype="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=inventory_report.csv"
-        return response
-    except Exception as e:
+        session.rollback()
+        print(f"Error printing KOT: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
