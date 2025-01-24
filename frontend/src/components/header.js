@@ -1,20 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import "./header.css";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Header = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        sessionStorage.clear();
+        navigate("/login");
+    };
+
     return (
-        <header className="header">
-            <Link to="/" className="header-logo">
-                EDEN DINE
-            </Link>
-            <nav className="nav-links">
-                <Link to="/orders/add">ADD ORDER</Link>
-                <Link to="/menu">MENU</Link>
-                <Link to="/orders">ORDERS</Link>
-                <Link to="/reports">REPORTS</Link>
-                <Link to="/menu-management">MENU MANAGEMENT</Link>
-                <Link to="/inventory-management">INVENTORY MANAGEMENT</Link>
+        <header>
+            <nav>
+                <NavLink to="/add-order">Add Order</NavLink>
+                <NavLink to="/orders">Orders</NavLink>
+                <NavLink to="/menu-management">Menu Management</NavLink>
+                <NavLink to="/inventory-management">Inventory Management</NavLink>
+                <NavLink to="/reports">Reports</NavLink>
+                <button onClick={handleLogout}>Logout</button>
             </nav>
         </header>
     );

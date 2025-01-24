@@ -1,27 +1,154 @@
-from flask import Flask, jsonify, request
-from models import session, MenuItem, InventoryItem, Order, OrderItem
+from flask import Flask, jsonify, request, session
+from models import session as db_session, User, MenuItem, InventoryItem, Order, OrderItem
 from flask_cors import CORS
+from functools import wraps
+import bcrypt
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key = "ed"
+
+@app.route("/login", methods=["POST"])
+def login():
+    try:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+
+        user = db_session.query(User).filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "Invalid username or password"}), 401
+
+        # Use bcrypt to verify the password
+        if not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
+            return jsonify({"error": "Invalid username or password"}), 401
+
+        # Save user details to session
+        session["username"] = user.username
+        session["role"] = user.role
+
+        return jsonify({"message": "Login successful", "role": user.role}), 200
+    except Exception as e:
+        print(f"Error during login: {e}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out successfully!"}), 200
 
 # Home route
 @app.route('/')
 def home():
     return "Welcome to the POS System!"
 
+def role_required(allowed_roles):
+    """
+    Decorator to restrict access based on roles.
+    :param allowed_roles: List of roles that can access the route.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Get the user's role from the session
+            user_role = session.get("role")
+            if user_role not in allowed_roles:
+                return jsonify({"error": "Access forbidden: Insufficient permissions"}), 403
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+# Route to fetch all users (Manager-only access)
+@app.route("/users", methods=["GET"])
+def get_users():
+    try:
+        users = db_session.query(User).all()
+        result = [
+            {"id": user.id, "username": user.username, "role": user.role}
+            for user in users
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to add a new user (Manager-only access)
+@app.route("/users", methods=["POST"])
+def add_user():
+    try:
+        data = request.json
+        username = data["username"]
+        password = data["password"]
+        role = data["role"]
+
+        # Check if the user already exists
+        existing_user = db_session.query(User).filter_by(username=username).first()
+        if existing_user:
+            return jsonify({"error": "Username already exists"}), 400
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        # Create a new user
+        new_user = User(username=username, password_hash=hashed_password, role=role)
+        db_session.add(new_user)
+        db_session.commit()
+
+        return jsonify({"message": "User added successfully!"}), 201
+    except Exception as e:
+        db_session.rollback()
+        print(f"Error adding user: {e}")  # Log the actual error
+        return jsonify({"error": str(e)}), 500
+
+# Route to edit a user (Manager-only access)
+@app.route("/users/<int:user_id>", methods=["PUT"])
+def edit_user(user_id):
+    try:
+        data = request.json
+        user = db_session.query(User).get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user.username = data.get("username", user.username)
+        user.role = data.get("role", user.role)
+        db_session.commit()
+
+        return jsonify({"message": "User updated successfully!"}), 200
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete a user (Manager-only access)
+@app.route("/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    try:
+        user = db_session.query(User).get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        db_session.delete(user)
+        db_session.commit()
+
+        return jsonify({"message": "User deleted successfully!"}), 200
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 # Route to fetch all menu items
 @app.route('/menu', methods=['GET'])
 def get_menu():
     try:
-        menu_items = session.query(MenuItem).all()
+        menu_items = db_session.query(MenuItem).all()
         result = [
             {"id": item.id, "name": item.name, "price": item.price, "description": item.description}
             for item in menu_items
         ]
         return jsonify(result)
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error fetching menu items: {e}")
         return jsonify({"error": str(e)}), 500
 

@@ -11,8 +11,11 @@ const AddOrder = () => {
     const [tableNumber, setTableNumber] = useState("");
     const [totalPrice, setTotalPrice] = useState(0);
     const [ongoingOrders, setOngoingOrders] = useState([]);
+    const [currentOrderId, setCurrentOrderId] = useState(null);
+    const [kotPrinted, setKotPrinted] = useState(false); // Track if KOT is printed
+    const [paymentMethod, setPaymentMethod] = useState(""); // Track payment method
+    const [allowReprint, setAllowReprint] = useState(false); // Allow reprinting KOT after changes
 
-    // Fetch menu items and ongoing orders when the component loads
     useEffect(() => {
         fetchMenuItems();
         fetchOngoingOrders();
@@ -50,6 +53,7 @@ const AddOrder = () => {
             setSelectedItems([...selectedItems, { ...menuItem, quantity: 1 }]);
         }
         setTotalPrice(totalPrice + menuItem.price);
+        setAllowReprint(true); // Allow reprinting KOT after adding a new item
     };
 
     const removeItem = (menuItem) => {
@@ -86,13 +90,70 @@ const AddOrder = () => {
         };
 
         try {
-            await axios.post("http://127.0.0.1:5000/orders", orderData);
+            const response = await axios.post("http://127.0.0.1:5000/orders", orderData);
+            const { order_id } = response.data;
+            setCurrentOrderId(order_id);
             toast.success("Order placed successfully!");
-            fetchOngoingOrders(); // Refresh ongoing orders
-            resetOrderForm();
+            fetchOngoingOrders();
         } catch (error) {
             toast.error("Error placing order!");
         }
+    };
+
+    const printKOT = async () => {
+        if (!currentOrderId) {
+            toast.warn("Please place the order first!");
+            return;
+        }
+
+        try {
+            await axios.post(`http://127.0.0.1:5000/orders/${currentOrderId}/kot`);
+            toast.success("KOT printed successfully!");
+            setKotPrinted(true);
+            setAllowReprint(false); // Disable reprinting unless a new item is added
+        } catch (error) {
+            toast.error("Error printing KOT!");
+        }
+    };
+
+    const processPayment = async () => {
+        if (!paymentMethod) {
+            toast.warn("Please select a payment method!");
+            return;
+        }
+
+        try {
+            await axios.post(
+                `http://127.0.0.1:5000/orders/${currentOrderId}/payment`,
+                { payment_method: paymentMethod }
+            );
+            toast.success("Payment completed! Order is now closed.");
+            fetchOngoingOrders();
+            resetOrderForm();
+        } catch (error) {
+            toast.error("Error processing payment!");
+        }
+    };
+
+    const editOngoingOrder = (order) => {
+        setCurrentOrderId(order.id);
+        setSelectedItems(
+            order.items.map((item) => ({
+                id: item.menu_item_id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+            }))
+        );
+        setOrderType(order.type);
+        setTableNumber(order.table_number || "");
+        setTotalPrice(order.total_price);
+        setKotPrinted(false); // Allow reprinting after edits
+    };
+
+    const completePayment = (order) => {
+        editOngoingOrder(order);
+        setKotPrinted(true); // Payment section is shown immediately
     };
 
     const resetOrderForm = () => {
@@ -100,6 +161,10 @@ const AddOrder = () => {
         setOrderType("Takeaway");
         setTableNumber("");
         setTotalPrice(0);
+        setCurrentOrderId(null);
+        setKotPrinted(false);
+        setPaymentMethod("");
+        setAllowReprint(false);
     };
 
     return (
@@ -125,12 +190,13 @@ const AddOrder = () => {
 
             {/* Order Summary Section */}
             <div className="order-summary-section">
-                <h2>Create Order</h2>
+                <h2>{currentOrderId ? "Edit Order" : "Create Order"}</h2>
                 <div>
                     <label>Order Type:</label>
                     <select
                         value={orderType}
                         onChange={(e) => setOrderType(e.target.value)}
+                        disabled={!!currentOrderId}
                     >
                         <option value="Takeaway">Takeaway</option>
                         <option value="Dine-In">Dine-In</option>
@@ -143,6 +209,7 @@ const AddOrder = () => {
                             type="number"
                             value={tableNumber}
                             onChange={(e) => setTableNumber(e.target.value)}
+                            disabled={!!currentOrderId}
                         />
                     </div>
                 )}
@@ -155,7 +222,32 @@ const AddOrder = () => {
                     ))}
                 </ul>
                 <p>Total: ${totalPrice.toFixed(2)}</p>
-                <button onClick={placeOrder}>Place Order</button>
+                {!currentOrderId && <button onClick={placeOrder}>Place Order</button>}
+                <button
+                    onClick={printKOT}
+                    disabled={!allowReprint && (kotPrinted || !currentOrderId)}
+                >
+                    Print KOT
+                </button>
+
+                {/* Payment Section */}
+                {kotPrinted && (
+                    <div className="payment-section">
+                        <h3>Payment</h3>
+                        <label>
+                            Payment Method:
+                            <select
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                            >
+                                <option value="">Select</option>
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                            </select>
+                        </label>
+                        <button onClick={processPayment}>Complete Payment</button>
+                    </div>
+                )}
             </div>
 
             {/* Ongoing Orders Section */}
@@ -170,6 +262,14 @@ const AddOrder = () => {
                                 <p>Order ID: {order.id}</p>
                                 <p>Type: {order.type}</p>
                                 <p>Total: ${order.total_price.toFixed(2)}</p>
+                                <div className="ongoing-order-actions">
+                                    <button onClick={() => editOngoingOrder(order)}>
+                                        Edit
+                                    </button>
+                                    <button onClick={() => completePayment(order)}>
+                                        Complete Payment
+                                    </button>
+                                </div>
                             </div>
                         ))
                     )}
