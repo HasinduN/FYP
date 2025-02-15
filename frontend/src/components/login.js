@@ -6,6 +6,7 @@ import "./login.css";
 const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -15,21 +16,32 @@ const Login = () => {
                 username,
                 password,
             });
-
-            // Save user info in local storage
-            localStorage.setItem("role", response.data.role);
-            localStorage.setItem("username", response.data.username);
-
-            // Redirect to home page
-            navigate("/home");
+    
+            if (response.data.username && response.data.role) {
+                sessionStorage.setItem("username", response.data.username);
+                sessionStorage.setItem("role", response.data.role);
+    
+                // Redirect to respective home page based on role
+                if (response.data.role === "manager") {
+                    navigate("/home");
+                } else if (response.data.role === "cashier") {
+                    navigate("/home");
+                } else {
+                    navigate("/login");  // Fallback to login if something goes wrong
+                }
+            } else {
+                setError("Invalid response from server");
+            }
         } catch (error) {
-            alert("Invalid username or password!");
+            setError("Invalid username or password. Please try again.");
         }
     };
+    
 
     return (
         <div className="login-container">
             <h1>Login</h1>
+            {error && <p className="error">{error}</p>}
             <form onSubmit={handleLogin}>
                 <div className="form-group">
                     <label>Username:</label>

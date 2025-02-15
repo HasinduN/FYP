@@ -1,11 +1,13 @@
 .inventory-container {
-    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    text-align: center;
     font-family: Arial, sans-serif;
 }
 
 .inventory-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
 }
@@ -13,38 +15,45 @@
 .add-item-form {
     display: flex;
     gap: 10px;
+    margin-top: 10px;
 }
 
 .add-item-form input {
     padding: 8px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 .add-item-form button {
     padding: 8px 15px;
-    background-color: #007bff;
+    background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
 }
 
-.add-item-form button:hover {
-    background-color: #0056b3;
+.add-item-form button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
 }
 
-.inventory-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-.inventory-item-card {
-    background-color: #f9f9f9;
+.inventory-table th, .inventory-table td {
     border: 1px solid #ddd;
-    border-radius: 8px;
     padding: 10px;
     text-align: center;
-    width: 200px;
+}
+
+.inventory-table th {
+    background-color: #f4f4f4;
+}
+
+.inventory-table td {
+    background-color: #fff;
 }

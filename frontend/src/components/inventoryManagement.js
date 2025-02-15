@@ -16,7 +16,7 @@ const InventoryManagement = () => {
     const fetchInventoryItems = async () => {
         try {
             setLoading(true);
-            const response = await axios.get("http://127.0.0.1:5000/inventory");
+            const response = await axios.get("http://127.0.0.1:5000/inventory-management");
             setInventoryItems(response.data);
         } catch (error) {
             toast.error("Error fetching inventory items!");
@@ -32,10 +32,10 @@ const InventoryManagement = () => {
         }
         try {
             setLoading(true);
-            await axios.post("http://127.0.0.1:5000/inventory", newItem);
+            await axios.post("http://127.0.0.1:5000/inventory-management", newItem);
             toast.success("Inventory item added successfully!");
             setNewItem({ name: "", quantity: "" });
-            fetchInventoryItems();
+            fetchInventoryItems(); // Refresh inventory list
         } catch (error) {
             toast.error("Error adding inventory item!");
         } finally {
@@ -63,20 +63,36 @@ const InventoryManagement = () => {
                             setNewItem({ ...newItem, quantity: parseInt(e.target.value) })
                         }
                     />
-                    <button onClick={addInventoryItem}>Add Item</button>
+                    <button onClick={addInventoryItem} disabled={loading}>
+                        {loading ? "Adding..." : "Add Item"}
+                    </button>
                 </div>
             </div>
+
             <div className="inventory-list">
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
-                    inventoryItems.map((item) => (
-                        <div key={item.id} className="inventory-item-card">
-                            <p>
-                                <strong>{item.name}</strong> - {item.quantity} units
-                            </p>
-                        </div>
-                    ))
+                    <table className="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Added Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {inventoryItems.map((item) => (
+                                <tr key={item.id}>
+                                    <td>{item.id}</td>
+                                    <td>{item.name}</td>
+                                    <td>{item.quantity}</td>
+                                    <td>{new Date(item.added_date).toLocaleString()}</td> 
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
         </div>

@@ -5,137 +5,8 @@ from functools import wraps
 import bcrypt
 
 app = Flask(__name__)
-CORS(app)
-app.secret_key = "ed"
-
-@app.route("/login", methods=["POST"])
-def login():
-    try:
-        data = request.json
-        username = data.get("username")
-        password = data.get("password")
-
-        if not username or not password:
-            return jsonify({"error": "Username and password are required"}), 400
-
-        user = db_session.query(User).filter_by(username=username).first()
-        if not user:
-            return jsonify({"error": "Invalid username or password"}), 401
-
-        # Use bcrypt to verify the password
-        if not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
-            return jsonify({"error": "Invalid username or password"}), 401
-
-        # Save user details to session
-        session["username"] = user.username
-        session["role"] = user.role
-
-        return jsonify({"message": "Login successful", "role": user.role}), 200
-    except Exception as e:
-        print(f"Error during login: {e}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
-
-@app.route("/logout", methods=["POST"])
-def logout():
-    session.clear()
-    return jsonify({"message": "Logged out successfully!"}), 200
-
-# Home route
-@app.route('/')
-def home():
-    return "Welcome to the POS System!"
-
-def role_required(allowed_roles):
-    """
-    Decorator to restrict access based on roles.
-    :param allowed_roles: List of roles that can access the route.
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Get the user's role from the session
-            user_role = session.get("role")
-            if user_role not in allowed_roles:
-                return jsonify({"error": "Access forbidden: Insufficient permissions"}), 403
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-# Route to fetch all users (Manager-only access)
-@app.route("/users", methods=["GET"])
-def get_users():
-    try:
-        users = db_session.query(User).all()
-        result = [
-            {"id": user.id, "username": user.username, "role": user.role}
-            for user in users
-        ]
-        return jsonify(result), 200
-    except Exception as e:
-        db_session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to add a new user (Manager-only access)
-@app.route("/users", methods=["POST"])
-def add_user():
-    try:
-        data = request.json
-        username = data["username"]
-        password = data["password"]
-        role = data["role"]
-
-        # Check if the user already exists
-        existing_user = db_session.query(User).filter_by(username=username).first()
-        if existing_user:
-            return jsonify({"error": "Username already exists"}), 400
-
-        # Hash the password
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-        # Create a new user
-        new_user = User(username=username, password_hash=hashed_password, role=role)
-        db_session.add(new_user)
-        db_session.commit()
-
-        return jsonify({"message": "User added successfully!"}), 201
-    except Exception as e:
-        db_session.rollback()
-        print(f"Error adding user: {e}")  # Log the actual error
-        return jsonify({"error": str(e)}), 500
-
-# Route to edit a user (Manager-only access)
-@app.route("/users/<int:user_id>", methods=["PUT"])
-def edit_user(user_id):
-    try:
-        data = request.json
-        user = db_session.query(User).get(user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        user.username = data.get("username", user.username)
-        user.role = data.get("role", user.role)
-        db_session.commit()
-
-        return jsonify({"message": "User updated successfully!"}), 200
-    except Exception as e:
-        db_session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to delete a user (Manager-only access)
-@app.route("/users/<int:user_id>", methods=["DELETE"])
-def delete_user(user_id):
-    try:
-        user = db_session.query(User).get(user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        db_session.delete(user)
-        db_session.commit()
-
-        return jsonify({"message": "User deleted successfully!"}), 200
-    except Exception as e:
-        db_session.rollback()
-        return jsonify({"error": str(e)}), 500
+CORS(app, supports_credentials=True)  # Enable CORS with credentials
+app.secret_key = "ed"  # Use a strong secret key in production
 
 # Route to fetch all menu items
 @app.route('/menu', methods=['GET'])
@@ -158,11 +29,11 @@ def add_menu_item():
     try:
         data = request.json
         new_item = MenuItem(name=data['name'], price=data['price'], description=data.get('description'))
-        session.add(new_item)
-        session.commit()
+        db_session.add(new_item)
+        db_session.commit()
         return jsonify({"message": "Menu item added successfully!"}), 201
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error adding menu item: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -171,17 +42,17 @@ def add_menu_item():
 def update_menu_item(item_id):
     try:
         data = request.json
-        item = session.query(MenuItem).get(item_id)
+        item = db_session.query(MenuItem).get(item_id)
         if not item:
             return jsonify({"error": "Menu item not found"}), 404
 
         item.name = data.get('name', item.name)
         item.price = data.get('price', item.price)
         item.description = data.get('description', item.description)
-        session.commit()
+        db_session.commit()
         return jsonify({"message": "Menu item updated successfully!"})
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error updating menu item: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -189,12 +60,12 @@ def update_menu_item(item_id):
 @app.route('/menu/<int:item_id>', methods=['DELETE'])
 def delete_menu_item(item_id):
     try:
-        item = session.query(MenuItem).get(item_id)
+        item = db_session.query(MenuItem).get(item_id)
         if not item:
             return jsonify({"error": "Menu item not found"}), 404
 
         # Check if the item is part of any ongoing order
-        ongoing_order = session.query(OrderItem).join(Order).filter(
+        ongoing_order = db_session.query(OrderItem).join(Order).filter(
             OrderItem.menu_item_id == item_id,
             Order.status == False  # Ongoing orders only
         ).first()
@@ -202,40 +73,40 @@ def delete_menu_item(item_id):
         if ongoing_order:
             return jsonify({"error": "Menu item cannot be deleted as it is part of an ongoing order."}), 400
 
-        session.delete(item)
-        session.commit()
+        db_session.delete(item)
+        db_session.commit()
         return jsonify({"message": "Menu item deleted successfully!"}), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error deleting menu item: {e}")
         return jsonify({"error": str(e)}), 500
 
 # Route to fetch all inventory items
-@app.route('/inventory', methods=['GET'])
+@app.route('/inventory-management', methods=['GET'])
 def get_inventory():
     try:
-        inventory_items = session.query(InventoryItem).all()
+        inventory_items = db_session.query(InventoryItem).all()
         result = [
-            {"id": item.id, "name": item.name, "quantity": item.quantity}
+            {"id": item.id, "name": item.name, "quantity": item.quantity, "added_date": item.added_date.strftime("%Y-%m-%d %H:%M:%S")}
             for item in inventory_items
         ]
         return jsonify(result)
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error fetching inventory items: {e}")
         return jsonify({"error": str(e)}), 500
 
 # Route to add a new inventory item
-@app.route('/inventory', methods=['POST'])
+@app.route('/inventory-management', methods=['POST'])
 def add_inventory_item():
     try:
         data = request.json
         new_item = InventoryItem(name=data['name'], quantity=data['quantity'])
-        session.add(new_item)
-        session.commit()
+        db_session.add(new_item)
+        db_session.commit()
         return jsonify({"message": "Inventory item added successfully!"}), 201
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error adding inventory item: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -243,7 +114,7 @@ def add_inventory_item():
 @app.route('/orders', methods=['GET'])
 def get_orders():
     try:
-        orders = session.query(Order).all()
+        orders = db_session.query(Order).all()
         result = [
             {
                 "id": order.id,
@@ -264,7 +135,7 @@ def get_orders():
         ]
         return jsonify(result)
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error fetching orders: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -290,8 +161,8 @@ def add_order():
 
         # Create a new order
         new_order = Order(type=order_type, total_price=total_price, status=False)
-        session.add(new_order)
-        session.commit()
+        db_session.add(new_order)
+        db_session.commit()
 
         # Add order items
         for item in items:
@@ -300,13 +171,13 @@ def add_order():
                 menu_item_id=item['menu_item_id'],
                 quantity=item['quantity']
             )
-            session.add(new_order_item)
-        session.commit()
+            db_session.add(new_order_item)
+        db_session.commit()
 
         # Return the new order ID
         return jsonify({"message": "Order added successfully!", "order_id": new_order.id}), 201
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error adding order: {e}")
         return jsonify({"error": str(e)}), 500
     
@@ -314,7 +185,7 @@ def add_order():
 def get_ongoing_orders():
     try:
         # Fetch ongoing orders
-        orders = session.query(Order).filter_by(status=False).all()
+        orders = db_session.query(Order).filter_by(status=False).all()
         result = [
             {
                 "id": order.id,
@@ -336,7 +207,7 @@ def get_ongoing_orders():
         ]
         return jsonify(result), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error fetching ongoing orders: {e}")
         return jsonify({"error": str(e)}), 500
     
@@ -347,7 +218,7 @@ def update_order(order_id):
         items = data['items']
 
         # Fetch the existing order
-        order = session.query(Order).get(order_id)
+        order = db_session.query(Order).get(order_id)
         if not order:
             return jsonify({"error": "Order not found"}), 404
         if order.status:
@@ -355,7 +226,7 @@ def update_order(order_id):
 
         # Add new items to the order
         for item in items:
-            existing_item = session.query(OrderItem).filter_by(
+            existing_item = db_session.query(OrderItem).filter_by(
                 order_id=order_id,
                 menu_item_id=item['menu_item_id']
             ).first()
@@ -369,17 +240,17 @@ def update_order(order_id):
                     menu_item_id=item['menu_item_id'],
                     quantity=item['quantity']
                 )
-                session.add(new_order_item)
+                db_session.add(new_order_item)
 
         # Update the total price
         for item in items:
-            menu_item = session.query(MenuItem).get(item['menu_item_id'])
+            menu_item = db_session.query(MenuItem).get(item['menu_item_id'])
             order.total_price += menu_item.price * item['quantity']
 
-        session.commit()
+        db_session.commit()
         return jsonify({"message": "Order updated successfully!"}), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error updating order: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -392,17 +263,17 @@ def process_payment(order_id):
         if not payment_method or payment_method not in ['cash', 'card']:
             return jsonify({"error": "Invalid payment method"}), 400
 
-        order = session.query(Order).get(order_id)
+        order = db_session.query(Order).get(order_id)
         if not order:
             return jsonify({"error": "Order not found"}), 404
 
         # Update order status
         order.status = True
-        session.commit()
+        db_session.commit()
 
         return jsonify({"message": f"Payment successful using {payment_method}!"}), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error processing payment: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -410,23 +281,23 @@ def process_payment(order_id):
 @app.route('/orders/<int:order_id>/status', methods=['PUT'])
 def update_order_status(order_id):
     try:
-        order = session.query(Order).get(order_id)
+        order = db_session.query(Order).get(order_id)
         if not order:
             return jsonify({"error": "Order not found"}), 404
 
         # Mark the order as completed
         order.status = True
-        session.commit()
+        db_session.commit()
         return jsonify({"message": "Order status updated to completed!"}), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error updating order status: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/orders/<int:order_id>/kot', methods=['POST'])
 def print_kot(order_id):
     try:
-        order = session.query(Order).get(order_id)
+        order = db_session.query(Order).get(order_id)
         if not order:
             return jsonify({"error": "Order not found"}), 404
 
@@ -449,11 +320,11 @@ def print_kot(order_id):
 
         # Mark KOT as printed
         order.kot_printed = True
-        session.commit()
+        db_session.commit()
 
         return jsonify({"message": "KOT printed successfully!"}), 200
     except Exception as e:
-        session.rollback()
+        db_session.rollback()
         print(f"Error printing KOT: {e}")
         return jsonify({"error": str(e)}), 500
 

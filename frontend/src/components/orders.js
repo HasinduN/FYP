@@ -28,36 +28,46 @@ const Orders = () => {
         <div className="orders-container">
             <ToastContainer />
             <h1>Orders</h1>
-            <div className="orders-list">
-                {loading ? (
-                    <p>Loading orders...</p>
-                ) : orders.length > 0 ? (
-                    orders.map((order) => (
-                        <div
-                            key={order.id}
-                            className={`order-card ${
-                                order.status ? "completed-order" : "ongoing-order"
-                            }`}
-                        >
-                            <h3>Order ID: {order.id}</h3>
-                            <p>Type: {order.type}</p>
-                            <p>Total Price: ${order.total_price.toFixed(2)}</p>
-                            <p>Status: {order.status ? "Completed" : "Ongoing"}</p>
-                            <h4>Items:</h4>
-                            <ul>
-                                {order.items.map((item, index) => (
-                                    <li key={index}>
-                                        {item.name} - ${item.price.toFixed(2)} x{" "}
-                                        {item.quantity}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))
-                ) : (
-                    <p>No orders found</p>
-                )}
-            </div>
+
+            {loading ? (
+                <p>Loading orders...</p>
+            ) : orders.length > 0 ? (
+                <table className="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Type</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                            <th>Items</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map((order) => (
+                            <tr
+                                key={order.id}
+                                className={order.status ? "completed-order" : "ongoing-order"}
+                            >
+                                <td>{order.id}</td>
+                                <td>{order.type}</td>
+                                <td>${order.total_price.toFixed(2)}</td>
+                                <td>{order.status ? "Completed" : "Ongoing"}</td>
+                                <td>
+                                    <ul>
+                                        {order.items.map((item, index) => (
+                                            <li key={index}>
+                                                {item.name} - ${item.price.toFixed(2)} x {item.quantity}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No orders found</p>
+            )}
         </div>
     );
 };
