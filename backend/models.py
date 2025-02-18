@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy.orm import scoped_session
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -10,7 +11,7 @@ DATABASE_URL = "postgresql://postgres:hasindu123@localhost/pos_system"
 engine = create_engine(DATABASE_URL, echo=True)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
-session = SessionLocal()
+session = scoped_session(SessionLocal)
 
 class User(Base):
     __tablename__ = "users"
@@ -47,8 +48,19 @@ class Order(Base):
     total_price = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(Boolean, default=False)
+    payment_method = Column(String, nullable=False)
     kot_printed = Column(Boolean, default=False)
     order_items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "table_number": self.table_number if self.table_number else "N/A",
+            "total_price": self.total_price,
+            "timestamp": self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "Completed" if self.status else "Ongoing"
+        }
 
 class OrderItem(Base):
     __tablename__ = "order_items"
