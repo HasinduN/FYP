@@ -4,6 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import bcrypt
 from sqlalchemy import func
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # Enable CORS with credentials
@@ -115,7 +116,23 @@ def add_inventory_item():
 @app.route('/orders', methods=['GET'])
 def get_orders():
     try:
-        orders = db_session.query(Order).all()
+        # Get start_date and end_date from request arguments
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
+        # Query orders, applying date filter if provided
+        query = db_session.query(Order)
+
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            query = query.filter(func.date(Order.timestamp) >= start_date)
+
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            query = query.filter(func.date(Order.timestamp) <= end_date)
+
+        orders = query.all()
+
         result = [
             {
                 "id": order.id,
@@ -135,6 +152,7 @@ def get_orders():
             for order in orders
         ]
         return jsonify(result)
+
     except Exception as e:
         db_session.rollback()
         print(f"Error fetching orders: {e}")
@@ -156,7 +174,7 @@ def add_order():
 
         # Calculate total price
         total_price = sum(
-            session.query(MenuItem).get(item['menu_item_id']).price * item['quantity']
+            db_session.query(MenuItem).get(item['menu_item_id']).price * item['quantity']
             for item in items
         )
 

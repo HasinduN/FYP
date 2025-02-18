@@ -18,7 +18,7 @@
 
 .menu-management-form button {
     padding: 8px 12px;
-    background-color: #28a745;
+    background-color: #106100;
     color: white;
     border: none;
     cursor: pointer;
@@ -38,7 +38,7 @@
 }
 
 .menu-table th {
-    background-color: #f4f4f4;
+    background-color: #106100;
 }
 
 .menu-table td {
@@ -52,6 +52,7 @@
     border: none;
     cursor: pointer;
     margin-left: 5px;
+    border-radius: 5px;
 }
 
 .edit-btn {
@@ -60,4 +61,5 @@
     padding: 6px 10px;
     border: none;
     cursor: pointer;
+    border-radius: 5px;
 }

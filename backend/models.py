@@ -48,7 +48,7 @@ class Order(Base):
     total_price = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(Boolean, default=False)
-    payment_method = Column(String, nullable=False)
+    #payment_method = Column(String, nullable=False)
     kot_printed = Column(Boolean, default=False)
     order_items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 

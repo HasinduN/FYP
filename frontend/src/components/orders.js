@@ -2,20 +2,30 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./orders.css";
 
 const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     useEffect(() => {
         fetchOrders();
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (filter = false) => {
         try {
             setLoading(true);
-            const response = await axios.get("http://127.0.0.1:5000/orders");
+            let url = "http://127.0.0.1:5000/orders";
+
+            if (filter && startDate && endDate) {
+                url += `?start_date=${startDate.toISOString().split("T")[0]}&end_date=${endDate.toISOString().split("T")[0]}`;
+            }
+
+            const response = await axios.get(url);
             setOrders(response.data);
         } catch (error) {
             toast.error("Error fetching orders!");
@@ -24,10 +34,26 @@ const Orders = () => {
         }
     };
 
+    const clearFilter = () => {
+        setStartDate(null);
+        setEndDate(null);
+        fetchOrders(); // Reload all orders
+    };
+
     return (
         <div className="orders-container">
             <ToastContainer />
             <h1>Orders</h1>
+
+            {/* Date Range Filter */}
+            <div className="date-filter">
+                <label>Start Date:</label>
+                <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+                <label>End Date:</label>
+                <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} />
+                <button onClick={() => fetchOrders(true)}>Filter</button>
+                <button onClick={clearFilter} disabled={!startDate && !endDate}>Clear Filter</button>
+            </div>
 
             {loading ? (
                 <p>Loading orders...</p>
@@ -44,10 +70,7 @@ const Orders = () => {
                     </thead>
                     <tbody>
                         {orders.map((order) => (
-                            <tr
-                                key={order.id}
-                                className={order.status ? "completed-order" : "ongoing-order"}
-                            >
+                            <tr key={order.id} className={order.status ? "completed-order" : "ongoing-order"}>
                                 <td>{order.id}</td>
                                 <td>{order.type}</td>
                                 <td>${order.total_price.toFixed(2)}</td>

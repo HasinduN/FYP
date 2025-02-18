@@ -26,7 +26,7 @@
 
 .add-item-form button {
     padding: 8px 15px;
-    background-color: #28a745;
+    background-color: #106100;
     color: white;
     border: none;
     border-radius: 5px;
@@ -51,7 +51,7 @@
 }
 
 .inventory-table th {
-    background-color: #f4f4f4;
+    background-color: #106100;
 }
 
 .inventory-table td {
