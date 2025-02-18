@@ -1,0 +1,26 @@
+.inventory-container {
+    max-width: 900px;
+    margin: auto;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.inventory-table th, .inventory-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.inventory-table th {
+    background-color: #f4f4f4;
+}
+
+.low-stock {
+    background-color: #ffdddd; /* Light red for low stock */
+}

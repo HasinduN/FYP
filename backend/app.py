@@ -5,83 +5,15 @@ from functools import wraps
 import bcrypt
 from sqlalchemy import func
 from datetime import datetime
+from routes.menu import menu_bp
+from routes.inventory import inventory_bp
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)  # Enable CORS with credentials
-app.secret_key = "ed"  # Use a strong secret key in production
+CORS(app, supports_credentials=True)
+app.secret_key = "ed"
 
-# Route to fetch all menu items
-@app.route('/menu', methods=['GET'])
-def get_menu():
-    try:
-        menu_items = db_session.query(MenuItem).all()
-        result = [
-            {"id": item.id, "name": item.name, "price": item.price, "description": item.description}
-            for item in menu_items
-        ]
-        return jsonify(result)
-    except Exception as e:
-        db_session.rollback()
-        print(f"Error fetching menu items: {e}")
-        return jsonify({"error": str(e)}), 500
-
-# Route to add a new menu item
-@app.route('/menu', methods=['POST'])
-def add_menu_item():
-    try:
-        data = request.json
-        new_item = MenuItem(name=data['name'], price=data['price'], description=data.get('description'))
-        db_session.add(new_item)
-        db_session.commit()
-        return jsonify({"message": "Menu item added successfully!"}), 201
-    except Exception as e:
-        db_session.rollback()
-        print(f"Error adding menu item: {e}")
-        return jsonify({"error": str(e)}), 500
-
-# Route to update menu item
-@app.route('/menu/<int:item_id>', methods=['PUT'])
-def update_menu_item(item_id):
-    try:
-        data = request.json
-        item = db_session.query(MenuItem).get(item_id)
-        if not item:
-            return jsonify({"error": "Menu item not found"}), 404
-
-        item.name = data.get('name', item.name)
-        item.price = data.get('price', item.price)
-        item.description = data.get('description', item.description)
-        db_session.commit()
-        return jsonify({"message": "Menu item updated successfully!"})
-    except Exception as e:
-        db_session.rollback()
-        print(f"Error updating menu item: {e}")
-        return jsonify({"error": str(e)}), 500
-
-# Route to delete menu item
-@app.route('/menu/<int:item_id>', methods=['DELETE'])
-def delete_menu_item(item_id):
-    try:
-        item = db_session.query(MenuItem).get(item_id)
-        if not item:
-            return jsonify({"error": "Menu item not found"}), 404
-
-        # Check if the item is part of any ongoing order
-        ongoing_order = db_session.query(OrderItem).join(Order).filter(
-            OrderItem.menu_item_id == item_id,
-            Order.status == False  # Ongoing orders only
-        ).first()
-
-        if ongoing_order:
-            return jsonify({"error": "Menu item cannot be deleted as it is part of an ongoing order."}), 400
-
-        db_session.delete(item)
-        db_session.commit()
-        return jsonify({"message": "Menu item deleted successfully!"}), 200
-    except Exception as e:
-        db_session.rollback()
-        print(f"Error deleting menu item: {e}")
-        return jsonify({"error": str(e)}), 500
+app.register_blueprint(menu_bp)
+app.register_blueprint(inventory_bp)
 
 # Route to fetch all inventory items
 @app.route('/inventory-management', methods=['GET'])

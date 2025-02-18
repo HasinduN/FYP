@@ -7,6 +7,7 @@ import Menu from "./components/menu";
 import MenuManagement from "./components/menuManagement";
 import InventoryManagement from "./components/inventoryManagement";
 import SalesReport from "./components/salesReport";
+import InventoryReport from "./components/inventoryReport";
 
 const App = () => {
     return (
@@ -19,6 +20,7 @@ const App = () => {
                 <Route path="/menu-management" element={<MenuManagement />} />
                 <Route path="/inventory-management" element={<InventoryManagement />} />
                 <Route path="/sales-report" element={<SalesReport />} />
+                <Route path="/inventory-report" element={<InventoryReport />} />
 
                 {/* Default Route */}
                 <Route path="*" element={<AddOrder />} />
