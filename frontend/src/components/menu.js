@@ -45,7 +45,7 @@ const Menu = () => {
                             <tr key={item.id}>
                                 <td>{item.id}</td>
                                 <td>{item.name}</td>
-                                <td>${item.price.toFixed(2)}</td>
+                                <td>{item.price.toFixed(2)}</td>
                                 <td>{item.description || "No description"}</td>
                             </tr>
                         ))}

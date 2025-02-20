@@ -33,7 +33,10 @@ const AddOrder = () => {
     const fetchOngoingOrders = async () => {
         try {
             const response = await axios.get("http://127.0.0.1:5000/orders/ongoing");
-            setOngoingOrders(response.data);
+            const sortedOrders = response.data.sort(
+                (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+            );
+            setOngoingOrders(sortedOrders);
         } catch (error) {
             toast.error("Error fetching ongoing orders!");
         }
@@ -177,7 +180,7 @@ const AddOrder = () => {
                     {menuItems.map((item) => (
                         <div key={item.id} className="menu-item-card">
                             <p>
-                                {item.name} - ${item.price.toFixed(2)}
+                                {item.name} - {item.price.toFixed(2)}
                             </p>
                             <div className="menu-item-buttons">
                                 <button onClick={() => addItem(item)}>Add</button>
@@ -217,11 +220,11 @@ const AddOrder = () => {
                 <ul>
                     {selectedItems.map((item) => (
                         <li key={item.id}>
-                            {item.name} - ${item.price.toFixed(2)} x {item.quantity}
+                            {item.name} - {item.price.toFixed(2)} x {item.quantity}
                         </li>
                     ))}
                 </ul>
-                <p>Total: ${totalPrice.toFixed(2)}</p>
+                <p>Total: {totalPrice.toFixed(2)}</p>
                 {!currentOrderId && <button onClick={placeOrder}>Place Order</button>}
                 <button
                     onClick={printKOT}
@@ -261,7 +264,7 @@ const AddOrder = () => {
                             <div key={order.id} className="ongoing-order-card">
                                 <p>Order ID: {order.id}</p>
                                 <p>Type: {order.type}</p>
-                                <p>Total: ${order.total_price.toFixed(2)}</p>
+                                <p>Total: {order.total_price.toFixed(2)}</p>
                                 <div className="ongoing-order-actions">
                                     <button onClick={() => editOngoingOrder(order)}>
                                         Edit

@@ -1,14 +1,19 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship, scoped_session, relationship
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Database connection URL
 DATABASE_URL = "postgresql://postgres:hasindu123@localhost/pos_system"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,  # Increase from default 5 to 20
+    max_overflow=40,  # Allow up to 40 extra connections
+    pool_timeout=30,  # Wait for 30 seconds before timeout
+    pool_recycle=1800  # Recycle connections every 30 minutes
+)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
 session = scoped_session(SessionLocal)
@@ -33,12 +38,39 @@ class MenuItem(Base):
     price = Column(Float, nullable=False)
     description = Column(String, nullable=True)
 
+    recipe = relationship("Recipe", back_populates="menu_item", cascade="all, delete-orphan")
+
 class InventoryItem(Base):
     __tablename__ = "inventory_items"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    quantity = Column(Integer, nullable=False)
+    name = Column(String, nullable=False, unique=True)
+    quantity = Column(Integer, nullable=False, default=0)
+    unit = Column(String, nullable=False, default="nos")
+
+    # Relationship to Inventory Log
+    inventory_logs = relationship("InventoryLog", back_populates="inventory_item", cascade="all, delete-orphan")
+
+class InventoryLog(Base):
+    __tablename__ = "inventory_log"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inventory_item_id = Column(Integer, ForeignKey("inventory_items.id"), nullable=False)
+    added_quantity = Column(Integer, nullable=False)
+    unit = Column(String, nullable=False, default="nos")
     added_date = Column(DateTime, default=datetime.utcnow)
+
+    # Relationship to InventoryItem
+    inventory_item = relationship("InventoryItem", back_populates="inventory_logs")
+
+class Recipe(Base):
+    __tablename__ = "recipes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    menu_item_id = Column(Integer, ForeignKey("menu_items.id"), nullable=False)
+    ingredient_id = Column(Integer, ForeignKey("inventory_items.id"), nullable=False)
+    quantity_needed = Column(Float, nullable=False)
+    unit = Column(String, nullable=False)
+
+    menu_item = relationship("MenuItem", back_populates="recipe")
+    ingredient = relationship("InventoryItem")
 
 class Order(Base):
     __tablename__ = "orders"

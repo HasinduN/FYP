@@ -11,9 +11,8 @@ const Header = () => {
             <nav className="nav">
                 <Link to="/add-order">Add Order</Link>
                 <Link to="/orders">Orders</Link>
-                <Link to="/menu">Menu</Link>
-                <Link to="/menu-management">Menu Management</Link>
-                <Link to="/inventory-management">Inventory Management</Link>
+                <Link to="/menu-management">Menu</Link>
+                <Link to="/inventory-management">Inventory</Link>
                 <Link to="/sales-report">Sales Report</Link>
                 <Link to="/inventory-report">Inventory Report</Link>
             </nav>

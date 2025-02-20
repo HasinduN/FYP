@@ -86,7 +86,7 @@ const MenuManagement = () => {
 
     return (
         <div className="menu-management-container">
-            <h1>Menu Management</h1>
+            <h1>MENU</h1>
 
             {/* Add New Menu Item Form */}
             <div className="menu-management-form">
@@ -135,8 +135,6 @@ const MenuManagement = () => {
                 </div>
             )}
 
-            {/* Table Displaying Menu Items */}
-            <h3>Existing Menu Items</h3>
             {menuItems.length > 0 ? (
                 <table className="menu-table">
                     <thead>
@@ -153,7 +151,7 @@ const MenuManagement = () => {
                             <tr key={item.id}>
                                 <td>{item.id}</td>
                                 <td>{item.name}</td>
-                                <td>${item.price.toFixed(2)}</td>
+                                <td>{item.price.toFixed(2)}</td>
                                 <td>{item.description || "No description"}</td>
                                 <td>
                                     <button

@@ -3,8 +3,8 @@ import axios from "axios";
 import "./inventoryReport.css";
 
 const InventoryReport = () => {
-    const [inventory, setInventory] = useState([]);
     const [lowStock, setLowStock] = useState([]);
+    const [stockAdditions, setStockAdditions] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -15,8 +15,8 @@ const InventoryReport = () => {
         try {
             setLoading(true);
             const response = await axios.get("http://127.0.0.1:5000/inventory-report");
-            setInventory(response.data.current_stock);
             setLowStock(response.data.low_stock_alerts);
+            setStockAdditions(response.data.stock_additions);
         } catch (error) {
             console.error("Error fetching inventory report:", error);
         } finally {
@@ -32,26 +32,36 @@ const InventoryReport = () => {
                 <p>Loading inventory data...</p>
             ) : (
                 <>
-                    <h2>Current Stock Levels</h2>
-                    <table className="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Item Name</th>
-                                <th>Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {inventory.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{item.id}</td>
-                                    <td>{item.name}</td>
-                                    <td>{item.quantity}</td>
+                    {/* Recent Stock Additions */}
+                    <h2>Inventory Report</h2>
+                    {stockAdditions.length > 0 ? (
+                        <table className="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item Name</th>
+                                    <th>Added Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Added Date</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {stockAdditions.map((log) => (
+                                    <tr key={log.id}>
+                                        <td>{log.id}</td>
+                                        <td>{log.item_name}</td>
+                                        <td>{log.added_quantity}</td>
+                                        <td>{log.unit}</td>
+                                        <td>{new Date(log.added_date).toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p>No recent stock additions.</p>
+                    )}
 
+                    {/* Low Stock Alerts */}
                     <h2>Low Stock Alerts</h2>
                     {lowStock.length > 0 ? (
                         <table className="inventory-table low-stock">
@@ -60,6 +70,7 @@ const InventoryReport = () => {
                                     <th>ID</th>
                                     <th>Item Name</th>
                                     <th>Quantity</th>
+                                    <th>Unit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -68,6 +79,7 @@ const InventoryReport = () => {
                                         <td>{item.id}</td>
                                         <td>{item.name}</td>
                                         <td>{item.quantity}</td>
+                                        <td>{item.unit}</td>
                                     </tr>
                                 ))}
                             </tbody>

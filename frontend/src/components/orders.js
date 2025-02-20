@@ -9,24 +9,25 @@ import "./orders.css";
 const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [dateRange, setDateRange] = useState([null, null]); // Stores start & end date
+    const [startDate, endDate] = dateRange; // Destructure start and end date
 
     useEffect(() => {
         fetchOrders();
     }, []);
 
-    const fetchOrders = async (filter = false) => {
+    const fetchOrders = async () => {
         try {
             setLoading(true);
             let url = "http://127.0.0.1:5000/orders";
 
-            if (filter && startDate && endDate) {
+            if (startDate && endDate) {
                 url += `?start_date=${startDate.toISOString().split("T")[0]}&end_date=${endDate.toISOString().split("T")[0]}`;
             }
 
             const response = await axios.get(url);
-            setOrders(response.data);
+            const sortedOrders = response.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort orders by timestamp (latest first)
+            setOrders(sortedOrders);
         } catch (error) {
             toast.error("Error fetching orders!");
         } finally {
@@ -34,25 +35,23 @@ const Orders = () => {
         }
     };
 
-    const clearFilter = () => {
-        setStartDate(null);
-        setEndDate(null);
-        fetchOrders(); // Reload all orders
-    };
-
     return (
         <div className="orders-container">
             <ToastContainer />
-            <h1>Orders</h1>
+            <h1>ORDERS</h1>
 
-            {/* Date Range Filter */}
+            {/* Date Range Filter with Single Calendar */}
             <div className="date-filter">
-                <label>Start Date:</label>
-                <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
-                <label>End Date:</label>
-                <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} />
-                <button onClick={() => fetchOrders(true)}>Filter</button>
-                <button onClick={clearFilter} disabled={!startDate && !endDate}>Clear Filter</button>
+                <label>Select Date Range:</label>
+                <DatePicker
+                    selectsRange={true} // Enables range selection
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => setDateRange(update)}
+                    showClearButton={false} // Removes blue cross mark
+                    placeholderText="Select date range"
+                />
+                <button onClick={fetchOrders}>Filter</button>
             </div>
 
             {loading ? (
@@ -66,24 +65,29 @@ const Orders = () => {
                             <th>Total Price</th>
                             <th>Status</th>
                             <th>Items</th>
+                            <th>Placed At</th>
                         </tr>
                     </thead>
                     <tbody>
                         {orders.map((order) => (
-                            <tr key={order.id} className={order.status ? "completed-order" : "ongoing-order"}>
+                            <tr
+                                key={order.id}
+                                className={order.status ? "completed-order" : "ongoing-order"}
+                            >
                                 <td>{order.id}</td>
                                 <td>{order.type}</td>
-                                <td>${order.total_price.toFixed(2)}</td>
+                                <td>{order.total_price.toFixed(2)}</td>
                                 <td>{order.status ? "Completed" : "Ongoing"}</td>
                                 <td>
                                     <ul>
                                         {order.items.map((item, index) => (
                                             <li key={index}>
-                                                {item.name} - ${item.price.toFixed(2)} x {item.quantity}
+                                                {item.name} - {item.price.toFixed(2)} x {item.quantity}
                                             </li>
                                         ))}
                                     </ul>
                                 </td>
+                                <td>{new Date(order.timestamp).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
