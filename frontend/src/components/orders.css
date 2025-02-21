@@ -1,25 +1,85 @@
+/* Orders Container */
 .orders-container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
     text-align: center;
     font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Heading */
+.orders-container h1 {
+    font-size: 24px;
+    color: #106100;
+    margin-bottom: 20px;
+}
+
+/* Date Filter Styling */
+.date-filter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.date-filter label {
+    font-weight: bold;
+    color: #333;
+}
+
+.date-filter .react-datepicker-wrapper {
+    width: auto;
+}
+
+.date-filter .react-datepicker__input-container input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 180px;
+    cursor: pointer;
+}
+
+.date-filter button {
+    background-color: #106100;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.date-filter button:hover {
+    background-color: #6bc25a;
+}
+
+/* Orders Table */
 .orders-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 10px;
+    overflow-x: auto;
 }
 
 .orders-table th, .orders-table td {
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
+    font-size: 14px;
 }
 
 .orders-table th {
     background-color: #106100;
+    color: white;
     font-weight: bold;
+    font-size: 15px;
 }
 
 /* Alternating row colors for better readability */
@@ -29,45 +89,32 @@
 
 .orders-table tr:hover {
     background-color: #f1f1f1;
+    transition: background 0.2s ease-in-out;
 }
 
-/* Date Filter Styling */
-.date-filter {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    align-items: center;
-}
-
-.date-filter label {
+/* Order Status Colors */
+.completed-order {
+    background-color: #e6ffe6 !important;
     font-weight: bold;
 }
 
-.date-filter input {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.ongoing-order {
+    background-color: #fff4e6 !important;
+    font-weight: bold;
 }
 
-.date-filter button {
-    background-color: #106100;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
+/* Items List */
+.orders-table ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    text-align: left;
 }
 
-.date-filter button:hover {
-    background-color: #6bc25a;
-}
-
-/* Disabled button styling */
-.date-filter button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+.orders-table ul li {
+    padding: 3px 0;
+    font-size: 14px;
+    color: #333;
 }
 
 /* Responsive Design */
@@ -78,12 +125,16 @@
     }
 
     .orders-table th, .orders-table td {
-        padding: 8px;
-        font-size: 14px;
+        padding: 10px;
+        font-size: 12px;
     }
 
     .date-filter {
         flex-direction: column;
         gap: 5px;
+    }
+
+    .date-filter .react-datepicker__input-container input {
+        width: 100%;
     }
 }

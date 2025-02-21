@@ -1,65 +1,153 @@
+/* Main Container */
 .menu-management-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: auto;
     text-align: center;
-    font-family: Arial, sans-serif;
+    font-family: "Arial", sans-serif;
+    padding: 20px;
+    background: #f4f4f4;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.menu-management-form {
-    margin-bottom: 20px;
+/* Header Styling */
+.menu-management-container h1 {
+    font-size: 24px;
+    color: #106100;
+    margin-bottom: 15px;
 }
 
-.menu-management-form input {
-    margin: 5px;
-    padding: 8px;
+/* Form Styling */
+.menu-management-form,
+.edit-menu-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+/* Input Fields */
+.menu-management-form input,
+.edit-menu-form input {
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-size: 16px;
 }
 
-.menu-management-form button {
-    padding: 8px 12px;
+/* Buttons */
+.menu-management-form button,
+.edit-menu-form button {
+    padding: 10px 15px;
     background-color: #106100;
     color: white;
     border: none;
-    cursor: pointer;
     border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
+.menu-management-form button:hover,
+.edit-menu-form button:hover {
+    background-color: #0a4700;
+}
+
+/* Edit Form Styling */
+.edit-menu-form {
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.edit-menu-form h3 {
+    color: #106100;
+    margin-bottom: 10px;
+}
+
+/* Table Styling */
 .menu-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-.menu-table th, .menu-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
+/* Table Headers */
+.menu-table th {
+    background-color: #106100;
+    color: white;
+    padding: 12px;
     text-align: center;
 }
 
-.menu-table th {
-    background-color: #106100;
-}
-
+/* Table Cells */
 .menu-table td {
-    background-color: #fff;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
 }
 
+/* Hover Effect */
+.menu-table tbody tr:hover {
+    background-color: #f1f1f1;
+    transition: 0.3s;
+}
+
+/* Button Styling in Table */
+.edit-btn,
 .delete-btn {
-    background-color: #dc3545;
-    color: white;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border: none;
-    cursor: pointer;
-    margin-left: 5px;
     border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+    font-size: 14px;
 }
 
 .edit-btn {
-    background-color: #ffc107;
+    background-color: #ffbb33;
     color: black;
-    padding: 6px 10px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+}
+
+.edit-btn:hover {
+    background-color: #ffa500;
+}
+
+.delete-btn {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #cc0000;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-management-form,
+    .edit-menu-form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-table th,
+    .menu-table td {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
 }

@@ -175,7 +175,7 @@ const AddOrder = () => {
             <ToastContainer />
             {/* Menu Section */}
             <div className="menu-section">
-                <h2>Menu Items</h2>
+                <h2>MENU ITEMS</h2>
                 <div className="menu-list">
                     {menuItems.map((item) => (
                         <div key={item.id} className="menu-item-card">
@@ -183,8 +183,8 @@ const AddOrder = () => {
                                 {item.name} - {item.price.toFixed(2)}
                             </p>
                             <div className="menu-item-buttons">
-                                <button onClick={() => addItem(item)}>Add</button>
-                                <button onClick={() => removeItem(item)}>Remove</button>
+                                <button onClick={() => addItem(item)}>AdDD</button>
+                                <button onClick={() => removeItem(item)}>REMOVE</button>
                             </div>
                         </div>
                     ))}
@@ -193,21 +193,21 @@ const AddOrder = () => {
 
             {/* Order Summary Section */}
             <div className="order-summary-section">
-                <h2>{currentOrderId ? "Edit Order" : "Create Order"}</h2>
+                <h2>{currentOrderId ? "EDIT ORDER" : "CREATE ORDER"}</h2>
                 <div>
-                    <label>Order Type:</label>
+                    <label>ORDER TYPE:</label>
                     <select
                         value={orderType}
                         onChange={(e) => setOrderType(e.target.value)}
                         disabled={!!currentOrderId}
                     >
-                        <option value="Takeaway">Takeaway</option>
-                        <option value="Dine-In">Dine-In</option>
+                        <option value="Takeaway">TAKEAWAY</option>
+                        <option value="Dine-In">DINE IN</option>
                     </select>
                 </div>
                 {orderType === "Dine-In" && (
                     <div>
-                        <label>Table Number:</label>
+                        <label>TABLE NUMBER:</label>
                         <input
                             type="number"
                             value={tableNumber}
@@ -216,7 +216,7 @@ const AddOrder = () => {
                         />
                     </div>
                 )}
-                <h3>Order Summary</h3>
+                <h3>ORDER SUMMARY</h3>
                 <ul>
                     {selectedItems.map((item) => (
                         <li key={item.id}>
@@ -224,53 +224,53 @@ const AddOrder = () => {
                         </li>
                     ))}
                 </ul>
-                <p>Total: {totalPrice.toFixed(2)}</p>
-                {!currentOrderId && <button onClick={placeOrder}>Place Order</button>}
+                <p>TOTAL: {totalPrice.toFixed(2)}</p>
+                {!currentOrderId && <button onClick={placeOrder}>PLACE ORDER</button>}
                 <button
                     onClick={printKOT}
                     disabled={!allowReprint && (kotPrinted || !currentOrderId)}
                 >
-                    Print KOT
+                    PRINT KOT
                 </button>
 
                 {/* Payment Section */}
                 {kotPrinted && (
                     <div className="payment-section">
-                        <h3>Payment</h3>
+                        <h3>PAYMENT</h3>
                         <label>
-                            Payment Method:
+                            PAYMENT METHOD:
                             <select
                                 value={paymentMethod}
                                 onChange={(e) => setPaymentMethod(e.target.value)}
                             >
-                                <option value="">Select</option>
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
+                                <option value="">SELECT</option>
+                                <option value="cash">CASH</option>
+                                <option value="card">CARD</option>
                             </select>
                         </label>
-                        <button onClick={processPayment}>Complete Payment</button>
+                        <button onClick={processPayment}>COMPLETE PAYMENT</button>
                     </div>
                 )}
             </div>
 
             {/* Ongoing Orders Section */}
             <div className="ongoing-orders-section">
-                <h2>Ongoing Orders</h2>
+                <h2>ONGOING ORDERS</h2>
                 <div className="ongoing-orders-list">
                     {ongoingOrders.length === 0 ? (
-                        <p>No ongoing orders.</p>
+                        <p>NO ONGOING ORDERS</p>
                     ) : (
                         ongoingOrders.map((order) => (
                             <div key={order.id} className="ongoing-order-card">
-                                <p>Order ID: {order.id}</p>
-                                <p>Type: {order.type}</p>
-                                <p>Total: {order.total_price.toFixed(2)}</p>
+                                <p>ORDER ID: {order.id}</p>
+                                <p>TYPE: {order.type}</p>
+                                <p>TOTAL: {order.total_price.toFixed(2)}</p>
                                 <div className="ongoing-order-actions">
                                     <button onClick={() => editOngoingOrder(order)}>
-                                        Edit
+                                        EDIT
                                     </button>
                                     <button onClick={() => completePayment(order)}>
-                                        Complete Payment
+                                        COMPLETE PAYMENT
                                     </button>
                                 </div>
                             </div>

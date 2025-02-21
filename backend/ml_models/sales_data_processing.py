@@ -5,7 +5,7 @@ file_path = "E:/PROJECT/backend/data/sales_data.xlsx"
 df = pd.read_excel(file_path, skiprows=0)
 
 # Print first few rows for debugging
-print("🔍 Raw Data Preview:\n", df.head())
+print("Raw Data Preview:\n", df.head())
 
 # Fix column names by removing extra spaces and newlines
 df.columns = [col.replace("\nAmount", "").strip() for col in df.columns]

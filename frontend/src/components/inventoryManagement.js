@@ -6,7 +6,7 @@ import "./inventoryManagement.css";
 
 const InventoryManagement = () => {
     const [inventoryItems, setInventoryItems] = useState([]);
-    const [newItem, setNewItem] = useState({ name: "", quantity: "", unit: "" });
+    const [newItem, setNewItem] = useState({ name: "", quantity: "", unit: "kg" });
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -34,7 +34,7 @@ const InventoryManagement = () => {
             setLoading(true);
             await axios.post("http://127.0.0.1:5000/inventory-management", newItem);
             toast.success("Inventory updated successfully!");
-            setNewItem({ name: "", quantity: "", unit: "" });
+            setNewItem({ name: "", quantity: "", unit: "kg" });
             fetchInventoryItems(); // Refresh inventory list
         } catch (error) {
             toast.error("Error updating inventory!");
@@ -47,11 +47,11 @@ const InventoryManagement = () => {
         <div className="inventory-container">
             <ToastContainer />
             <div className="inventory-header">
-                <h1>INVENTORY</h1>
+                <h1>INVENTORY MANAGEMENT</h1>
                 <div className="add-item-form">
                     <input
                         type="text"
-                        placeholder="Name"
+                        placeholder="Item Name"
                         value={newItem.name}
                         onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                     />
@@ -59,9 +59,7 @@ const InventoryManagement = () => {
                         type="number"
                         placeholder="Quantity"
                         value={newItem.quantity}
-                        onChange={(e) =>
-                            setNewItem({ ...newItem, quantity: parseInt(e.target.value) })
-                        }
+                        onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) })}
                     />
                     <select
                         value={newItem.unit}
@@ -74,7 +72,7 @@ const InventoryManagement = () => {
                         <option value="nos">nos</option>
                     </select>
                     <button onClick={addInventoryItem} disabled={loading}>
-                        {loading ? "Updating..." : "Update Inventory"}
+                        {loading ? "Updating..." : "Add Item"}
                     </button>
                 </div>
             </div>

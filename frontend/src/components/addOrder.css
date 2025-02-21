@@ -5,15 +5,16 @@
     justify-content: space-between;
     padding: 20px;
     gap: 20px;
-    border-radius: 0px 0px 20px 20px;
-    background-color: #106100;
     font-family: Arial, sans-serif;
+    background-color: #ffffff; /* Standard white background */
 }
 
 /* Menu Section */
-.menu-section {
+.menu-section,
+.order-summary-section,
+.ongoing-orders-section {
     flex: 1;
-    background: #ffffff;
+    background: #ffffff; /* White background */
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -21,7 +22,9 @@
     overflow-y: auto;
 }
 
-.menu-section h2 {
+.menu-section h2,
+.order-summary-section h2,
+.ongoing-orders-section h2 {
     margin-bottom: 15px;
     color: #333333;
 }
@@ -72,21 +75,6 @@
 }
 
 /* Order Summary Section */
-.order-summary-section {
-    flex: 1;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.order-summary-section h2 {
-    color: #333333;
-    margin-bottom: 20px;
-}
-
 .order-summary-section label {
     display: block;
     margin-bottom: 10px;
@@ -137,28 +125,7 @@
     background-color: #6bc25a;
 }
 
-.order-summary-section .payment-section {
-    margin-top: 20px;
-    border-top: 1px solid #dddddd;
-    padding-top: 15px;
-}
-
 /* Ongoing Orders Section */
-.ongoing-orders-section {
-    flex: 1;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.ongoing-orders-section h2 {
-    margin-bottom: 15px;
-    color: #333333;
-}
-
 .ongoing-orders-list {
     display: flex;
     flex-direction: column;
