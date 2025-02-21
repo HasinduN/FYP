@@ -1,41 +1,33 @@
 import pandas as pd
 
-# Load dataset (ensure we are reading column names correctly)
-file_path = "E:/PROJECT/backend/data/sales_data.xlsx"
-df = pd.read_excel(file_path, skiprows=0)
+# Load the data
+data = pd.read_excel("E:/PROJECT/backend/data/sales_data.xlsx")
 
-# Print first few rows for debugging
-print("Raw Data Preview:\n", df.head())
+# Clean column names by removing any unwanted text
+data.columns = data.columns.str.replace(r"\s*Amount\s*", "", regex=True).str.strip()
 
-# Fix column names by removing extra spaces and newlines
-df.columns = [col.replace("\nAmount", "").strip() for col in df.columns]
+# Reshape the data to long format
+long_data = data.melt(id_vars=["Item", "Unit_Price"], var_name="Date", value_name="Sales")
 
-# Rename 'Unit price' column correctly
-df.rename(columns={"Unit price": "Unit_Price"}, inplace=True)
+# Convert the "Date" column to datetime format
+long_data["Date"] = pd.to_datetime(long_data["Date"], format="%m/%d/%Y", errors="coerce")
 
-# Debug: Print new column names
-print("Cleaned Column Names:", df.columns.tolist())
+# Group by date and check if all sales are 0
+closed_dates = long_data.groupby("Date")["Sales"].sum() == 0
+closed_dates = closed_dates[closed_dates].index.tolist()
 
-# Check if "Item" and "Unit_Price" exist
-if "Item" not in df.columns or "Unit_Price" not in df.columns:
-    print("Error: 'Item' or 'Unit_Price' columns are missing!")
-    exit()
+# Add a "Restaurant_Closed" column to mark closed dates
+long_data["Restaurant_Closed"] = long_data["Date"].isin(closed_dates).astype(int)
 
-# Melt the DataFrame to convert dates into rows
-df_melted = df.melt(id_vars=["Item", "Unit_Price"], var_name="Date", value_name="Amount_Sold")
+# Extract day of the week and month
+long_data["Day_of_Week"] = long_data["Date"].dt.dayofweek  # Monday=0, Sunday=6
+long_data["Month"] = long_data["Date"].dt.month
 
-# Convert "Date" column to datetime format
-df_melted["Date"] = pd.to_datetime(df_melted["Date"], errors='coerce')
+# Add a "Weekend" feature
+long_data["Weekend"] = long_data["Day_of_Week"].isin([5, 6]).astype(int)
 
-# Convert "Amount_Sold" to numeric
-df_melted["Amount_Sold"] = pd.to_numeric(df_melted["Amount_Sold"], errors='coerce')
+# Save the cleaned data to the specified directory
+output_path = "E:/PROJECT/backend/data/cleaned_restaurant_sales_with_closed_dates.csv"
+long_data.to_csv(output_path, index=False)
 
-# Drop missing values
-df_melted.dropna(inplace=True)
-
-# Save cleaned data
-df_melted.to_csv("E:/PROJECT/backend/data/cleaned_sales_data.csv", index=False)
-
-# Print success message
-print("Data Cleaning Completed! Cleaned dataset saved.")
-print(df_melted.head())
+print(f"Cleaned data saved")
