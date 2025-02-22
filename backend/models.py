@@ -76,7 +76,7 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String, nullable=False)  # Takeaway or Dine-In
-    table_number = Column(Integer, nullable=True)  # Table number for Dine-In orders
+    table_number = Column(Integer, nullable=True)
     total_price = Column(Float, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     status = Column(Boolean, default=False)
