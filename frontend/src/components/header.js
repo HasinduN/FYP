@@ -19,7 +19,7 @@ const Header = () => {
 
                 <div className="reports-dropdown">
                     <button className="reports-button" onClick={() => setShowReports(!showReports)}>
-                        REPORTS ▼
+                        REPORTS
                     </button>
                     {showReports && (
                         <div className="reports-menu">

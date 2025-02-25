@@ -183,7 +183,7 @@ const AddOrder = () => {
                                 {item.name} - {item.price.toFixed(2)}
                             </p>
                             <div className="menu-item-buttons">
-                                <button onClick={() => addItem(item)}>AdDD</button>
+                                <button onClick={() => addItem(item)}>ADD</button>
                                 <button onClick={() => removeItem(item)}>REMOVE</button>
                             </div>
                         </div>
