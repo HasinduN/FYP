@@ -86,7 +86,7 @@ const MenuManagement = () => {
 
     return (
         <div className="menu-management-container">
-            <h1>MENU</h1>
+            <h1>MENU MANAGEMENT</h1>
 
             {/* Add New Menu Item Form */}
             <div className="menu-management-form">

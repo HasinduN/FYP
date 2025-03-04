@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship, scoped_session, relationship
 from datetime import datetime
@@ -20,16 +20,19 @@ session = scoped_session(SessionLocal)
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    role = Column(String, nullable=False)  # manager or cashier
+    password = Column(String, nullable=False)  # Renamed from password_hash
+    role = Column(Enum("admin", "manager", "cashier", name="user_roles"), nullable=False, default="cashier")
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        """Hashes the password before storing it."""
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        """Verifies if the entered password is correct."""
+        return check_password_hash(self.password, password)
 
 class MenuItem(Base):
     __tablename__ = "menu_items"

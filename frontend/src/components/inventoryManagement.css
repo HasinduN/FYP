@@ -75,7 +75,7 @@
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-.inventory-table th {
+.inventory-table thead th {
     background-color: #106100;
     color: white;
     padding: 12px;
