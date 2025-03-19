@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify
+from utils.decorators import role_required
+from flask_jwt_extended import jwt_required
 from models import InventoryItem, InventoryLog
 from models import session as db_session
 from datetime import datetime, timedelta

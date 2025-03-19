@@ -1,46 +1,89 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import db, User
+from flask_jwt_extended import jwt_required, get_jwt, create_access_token, get_jwt_identity
+from models import session, User, TokenBlockList
+import datetime
+from functools import wraps
 
 auth_bp = Blueprint("auth", __name__)
 
-# ✅ User Registration
-@auth_bp.route("/register", methods=["POST"])
-def register():
+@auth_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    """Fetch the currently authenticated user's details"""
     try:
-        data = request.get_json()
-        username = data.get("username")
-        password = data.get("password")
-        role = data.get("role", "cashier")  # Default role is "cashier"
+        identity = get_jwt_identity()  # Extract JWT identity
 
-        # Check if the username already exists
-        if User.query.filter_by(username=username).first():
-            return jsonify({"error": "Username already exists"}), 400
+        if not identity:
+            return jsonify({"error": "Invalid token"}), 401  # Token issue
 
-        # Create new user
-        new_user = User(username=username, role=role)
-        new_user.set_password(password)  # Hash password
+        user = session.query(User).filter_by(id=int(identity)).first()  # Convert identity to int
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
-        db.session.add(new_user)
-        db.session.commit()
+        return jsonify({"id": user.id, "username": user.username, "role": user.role}), 200
 
-        return jsonify({"message": "User registered successfully"}), 201
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# ✅ User Login
+@auth_bp.route("/register", methods=["POST"])
+def register():
+    """Register a new user with unique username and email"""
+    data = request.json
+
+    try:
+        # Check if the username already exists
+        existing_username = session.query(User).filter_by(username=data["username"]).first()
+        if existing_username:
+            return jsonify({"message": "Username already exists!"}), 400
+
+        # Check if the email already exists
+        existing_email = session.query(User).filter_by(email=data["email"]).first()
+        if existing_email:
+            return jsonify({"message": "Email already exists!"}), 400
+
+        # Create new user
+        new_user = User(username=data["username"], email=data["email"], role=data["role"])
+        new_user.set_password(data["password"])
+
+        session.add(new_user)
+        session.commit()
+
+        return jsonify({"message": "User registered successfully!"}), 201
+
+    except Exception as e:
+        session.rollback()
+        print(f"Error registering user: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
+    """Authenticate user and return JWT token using username instead of email"""
+    data = request.json
+    user = session.query(User).filter_by(username=data["username"]).first()  # Use username
 
-    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(data["password"]):
+        return jsonify({"message": "Invalid credentials!"}), 401
 
-    if not user or not user.check_password(password):
-        return jsonify({"error": "Invalid username or password"}), 401
+    access_token = create_access_token(identity=str(user.id), additional_claims={"role": user.role})
 
-    # Generate JWT token
-    access_token = create_access_token(identity={"id": user.id, "role": user.role})
-    return jsonify({"access_token": access_token, "role": user.role}), 200
+    return jsonify({"token": access_token, "role": user.role}), 200
+
+@auth_bp.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    """Blacklist the current JWT token on logout"""
+    try:
+        jti = get_jwt()["jti"]
+        now = datetime.datetime.utcnow()
+
+        if session.query(TokenBlockList).filter_by(jti=jti).first():
+            return jsonify({"message": "Token is already blacklisted"}), 400
+
+        session.add(TokenBlockList(jti=jti, created_at=now))
+        session.commit()
+
+        return jsonify({"message": "Logged out successfully!"}), 200
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500

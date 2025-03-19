@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from models import session as db_session, MenuItem, Order,OrderItem
 from sqlalchemy.exc import SQLAlchemyError
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import role_required
 
 menu_bp = Blueprint("menu", __name__)
 
@@ -17,6 +19,8 @@ def get_menu():
 
 #Add a new menu item
 @menu_bp.route('/menu', methods=['POST'])
+@jwt_required()
+@role_required(["admin"])
 def add_menu_item():
     try:
         data = request.json

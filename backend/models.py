@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Enum
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship, scoped_session, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -21,18 +21,27 @@ session = scoped_session(SessionLocal)
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)  # Renamed from password_hash
-    role = Column(Enum("admin", "manager", "cashier", name="user_roles"), nullable=False, default="cashier")
+    email = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    role = Column(Enum("admin", "manager", "cashier", name="user_roles"), nullable=False, server_default="cashier")
 
     def set_password(self, password):
-        """Hashes the password before storing it."""
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
         """Verifies if the entered password is correct."""
         return check_password_hash(self.password, password)
+    
+class TokenBlockList(Base):
+    __tablename__ = "token_blocklist"
+
+    jti = Column(String, primary_key=True, nullable=False)  # Unique token ID
+    created_at = Column(DateTime, default=datetime.utcnow)  # Timestamp of logout
+
+    def __repr__(self):
+        return f"<TokenBlockList jti={self.jti} created_at={self.created_at}>"
 
 class MenuItem(Base):
     __tablename__ = "menu_items"

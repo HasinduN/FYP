@@ -1,68 +1,37 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "./login.css";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/authContext";
+import "./authModal.css";
 
-const Login = () => {
+const Login = ({ closeModal }) => {
+    const { login } = useContext(AuthContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError("");
+
         try {
-            const response = await axios.post("http://127.0.0.1:5000/login", {
-                username,
-                password,
-            });
-    
-            if (response.data.username && response.data.role) {
-                sessionStorage.setItem("username", response.data.username);
-                sessionStorage.setItem("role", response.data.role);
-    
-                // Redirect to respective home page based on role
-                if (response.data.role === "manager") {
-                    navigate("/home");
-                } else if (response.data.role === "cashier") {
-                    navigate("/home");
-                } else {
-                    navigate("/login");  // Fallback to login if something goes wrong
-                }
-            } else {
-                setError("Invalid response from server");
-            }
-        } catch (error) {
-            setError("Invalid username or password. Please try again.");
+            await login(username, password);
+            closeModal();
+        } catch (err) {
+            setError("Invalid credentials. Please try again.");
         }
     };
-    
 
     return (
-        <div className="login-container">
-            <h1>Login</h1>
-            {error && <p className="error">{error}</p>}
-            <form onSubmit={handleLogin}>
-                <div className="form-group">
-                    <label>Username:</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Login</button>
-            </form>
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <h2>Login</h2>
+                {error && <p className="error">{error}</p>}
+                <form onSubmit={handleLogin}>
+                    <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                    <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <button type="submit">Login</button>
+                </form>
+                <button className="close-btn" onClick={closeModal}>Close</button>
+            </div>
         </div>
     );
 };

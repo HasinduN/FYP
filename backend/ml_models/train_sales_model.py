@@ -28,7 +28,7 @@ model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
 # Save the model
-model_path = "E:/PROJECT/backend/data/sales_prediction_model.pkl"
+model_path = "E:/PROJECT/backend/ml_models/sales_prediction_model.pkl"
 joblib.dump(model, model_path)
 
 print(f"Model saved to: {model_path}")

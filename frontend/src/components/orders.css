@@ -3,18 +3,18 @@
     max-width: 1000px;
     margin: auto;
     text-align: center;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     padding: 20px;
-    background: #ffffff;
+    background: #f4f4f4;
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Heading */
 .orders-container h1 {
     font-size: 24px;
     color: #106100;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 /* Date Filter Styling */
@@ -64,15 +64,10 @@
 .orders-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
-    overflow-x: auto;
-}
-
-.orders-table th, .orders-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .orders-table th {
@@ -80,6 +75,14 @@
     color: white;
     font-weight: bold;
     font-size: 15px;
+}
+
+.orders-table td {
+    padding: 10px;
+    text-align: center;
+    font-weight: normal;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
 }
 
 /* Alternating row colors for better readability */

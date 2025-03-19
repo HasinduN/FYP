@@ -23,7 +23,10 @@ const AddOrder = () => {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get("http://127.0.0.1:5000/menu");
+            const token = localStorage.getItem("access_token"); // Retrieve stored JWT token
+            const response = await axios.get("http://127.0.0.1:5000/menu", {
+                headers: { Authorization: `Bearer ${token}` } // Add token to headers
+            });
             setMenuItems(response.data);
         } catch (error) {
             toast.error("Error fetching menu items!");
@@ -32,7 +35,10 @@ const AddOrder = () => {
 
     const fetchOngoingOrders = async () => {
         try {
-            const response = await axios.get("http://127.0.0.1:5000/orders/ongoing");
+            const token = localStorage.getItem("access_token");
+            const response = await axios.get("http://127.0.0.1:5000/orders/ongoing", {
+                headers: {Authorization: `Bearer ${token}`}
+            });
             const sortedOrders = response.data.sort(
                 (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
             );
@@ -93,7 +99,10 @@ const AddOrder = () => {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:5000/orders", orderData);
+            const token = localStorage.getItem("access_token");
+            const response = await axios.post("http://127.0.0.1:5000/orders", orderData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             const { order_id } = response.data;
             setCurrentOrderId(order_id);
             toast.success("Order placed successfully!");
@@ -110,7 +119,11 @@ const AddOrder = () => {
         }
 
         try {
-            await axios.post(`http://127.0.0.1:5000/orders/${currentOrderId}/kot`);
+            const token = localStorage.getItem("access_token");
+            await axios.post(`http://127.0.0.1:5000/orders/${currentOrderId}/kot`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             toast.success("KOT printed successfully!");
             setKotPrinted(true);
             setAllowReprint(false); // Disable reprinting unless a new item is added
@@ -126,9 +139,11 @@ const AddOrder = () => {
         }
 
         try {
+            const token = localStorage.getItem("access_token");
             await axios.post(
                 `http://127.0.0.1:5000/orders/${currentOrderId}/payment`,
-                { payment_method: paymentMethod }
+                { payment_method: paymentMethod },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             toast.success("Payment completed! Order is now closed.");
             fetchOngoingOrders();

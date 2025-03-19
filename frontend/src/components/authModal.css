@@ -1,0 +1,53 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it appears above other elements */
+}
+
+/* Modal Content */
+.modal-content {
+    background: white;
+    padding: 20px;
+    width: 400px;
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+    z-index: 1001;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Prevent overlapping */
+.modal-content h2 {
+    margin-top: 0;
+}
+
+/* Close button styling */
+.close-btn {
+    margin-top: 10px;
+    background: #bbb;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    border-radius: 5px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

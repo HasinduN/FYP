@@ -5,7 +5,7 @@
     justify-content: space-between;
     padding: 20px;
     gap: 20px;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     background-color: #ffffff;
 }
 
@@ -26,7 +26,7 @@
 .order-summary-section h2,
 .ongoing-orders-section h2 {
     margin-bottom: 15px;
-    color: #333333;
+    color: #106100;
 }
 
 .menu-list {
@@ -48,6 +48,7 @@
 .menu-item-card p {
     margin: 0;
     font-size: 16px;
+    font-weight: bold;
     color: #333333;
 }
 
@@ -90,6 +91,7 @@
     border: 1px solid #cccccc;
     border-radius: 4px;
     font-size: 14px;
+    font-weight: bold;
 }
 
 .order-summary-section ul {
@@ -170,7 +172,7 @@
 }
 
 .ongoing-order-actions button:hover {
-    opacity: 0.9;
+    background-color: #6bc25a;
 }
 
 /* Scrollbars */

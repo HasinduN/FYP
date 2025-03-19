@@ -1,30 +1,51 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/header";
+import React, { useContext } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthContext } from "./context/authContext";
+import LandingPage from "./components/landingPage";
+import Login from "./components/login";
+import Register from "./components/register";
 import AddOrder from "./components/addOrder";
 import Orders from "./components/orders";
-import Menu from "./components/menu";
 import MenuManagement from "./components/menuManagement";
 import InventoryManagement from "./components/inventoryManagement";
 import SalesReport from "./components/salesReport";
 import InventoryReport from "./components/inventoryReport";
+import Header from "./components/header";
+
+const ProtectedRoute = ({ element, allowedRoles }) => {
+    const { user } = useContext(AuthContext);
+    const role = localStorage.getItem("role");
+
+    if (!user) {
+        return <Navigate to="/login" />;
+    }
+
+    if (!allowedRoles.includes(role)) {
+        return <Navigate to="/unauthorized" />;
+    }
+
+    return element;
+};
 
 const App = () => {
     return (
-        <Router>
+        <>
             <Header />
             <Routes>
-                <Route path="/add-order" element={<AddOrder />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/menu-management" element={<MenuManagement />} />
-                <Route path="/inventory-management" element={<InventoryManagement />} />
-                <Route path="/sales-report" element={<SalesReport />} />
-                <Route path="/inventory-report" element={<InventoryReport />} />
+                <Route path="/" element={<LandingPage />} />
+
+                {/* Role-based Access Control */}
+                <Route path="/add-order" element={<ProtectedRoute element={<AddOrder />} allowedRoles={["admin", "cashier"]} />} />
+                <Route path="/orders" element={<ProtectedRoute element={<Orders />} allowedRoles={["admin", "manager", "cashier"]} />} />
+                <Route path="/menu-management" element={<ProtectedRoute element={<MenuManagement />} allowedRoles={["admin"]} />} />
+                <Route path="/inventory-management" element={<ProtectedRoute element={<InventoryManagement />} allowedRoles={["admin", "manager"]} />} />
+                <Route path="/sales-report" element={<ProtectedRoute element={<SalesReport />} allowedRoles={["admin", "manager"]} />} />
+                <Route path="/inventory-report" element={<ProtectedRoute element={<InventoryReport />} allowedRoles={["admin", "manager"]} />} />
 
                 {/* Default Route */}
-                <Route path="*" element={<AddOrder />} />
+                <Route path="*" element={<Navigate to="/" />} />
             </Routes>
-        </Router>
+        </>
     );
 };
 
