@@ -10,8 +10,7 @@ const LandingPage = () => {
         <div className="landing-container">
             <div className="overlay"></div>
             <div className="content">
-                <h1>Welcome to Eden Dine POS</h1>
-                <p>Manage orders, inventory, and sales with ease.</p>
+                <h1>WELCOME</h1>
 
                 <div className="button-group">
                     <button className="primary-btn" onClick={() => setActiveModal("login")}>

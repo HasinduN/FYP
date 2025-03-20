@@ -1,4 +1,3 @@
-/* Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -9,39 +8,70 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000; /* Ensure it appears above other elements */
+    z-index: 1000;
 }
 
-/* Modal Content */
 .modal-content {
     background: white;
-    padding: 20px;
+    padding: 25px;
     width: 400px;
-    border-radius: 8px;
+    border-radius: 10px;
     text-align: center;
     position: relative;
-    z-index: 1001;
-    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-in-out;
 }
 
-/* Prevent overlapping */
-.modal-content h2 {
-    margin-top: 0;
+input, select {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
 }
 
-/* Close button styling */
+button {
+    width: 80%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    color: white;
+    background: #106100;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
 .close-btn {
     margin-top: 10px;
-    background: #bbb;
-    padding: 10px;
-    cursor: pointer;
-    border: none;
-    width: 100%;
-    border-radius: 5px;
+    background: #ff4b5c;
+    color: white;
+    font-weight: bold;
 }
 
-/* Animation */
-@keyframes fadeIn {
+.close-btn:hover {
+    background: #d63031;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.success {
+    color: green;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Animations */
+@keyframes slideIn {
     from {
         opacity: 0;
         transform: translateY(-20px);

@@ -11,7 +11,7 @@ const Header = () => {
 
     const handleLogout = async () => {
         await logout();
-        navigate("/login"); // Redirect after logout
+        navigate("/login");
     };
 
     return (
@@ -43,7 +43,7 @@ const Header = () => {
                     )}
                 </div>
 
-                <button onClick={handleLogout}>LOGOUT</button>
+                <button className="logout-btn" onClick={handleLogout}>LOGOUT</button>
             </nav>
         </header>
     );

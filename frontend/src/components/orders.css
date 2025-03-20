@@ -10,14 +10,12 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Heading */
 .orders-container h1 {
     font-size: 24px;
     color: #106100;
     margin-bottom: 15px;
 }
 
-/* Date Filter Styling */
 .date-filter {
     display: flex;
     justify-content: center;
@@ -60,7 +58,6 @@
     background-color: #6bc25a;
 }
 
-/* Orders Table */
 .orders-table {
     width: 100%;
     border-collapse: collapse;

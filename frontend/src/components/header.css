@@ -2,80 +2,103 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #106100;
-    padding: 10px 20px;
+    background: #106100;
+    padding: 12px 30px;
     color: white;
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .logo-img {
-    width: 65px;
+    width: 50px;
     height: auto;
-    margin-right: 10px;
+    border-radius: 5%;
 }
 
 .nav {
     display: flex;
-    gap: 15px;
+    align-items: center;
+    gap: 30px;
 }
 
 .nav a {
     color: white;
-    font-family: 'Poppins', sans-serif;
     text-decoration: none;
+    font-size: 16px;
     font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
 }
 
 .nav a:hover {
-    background-color: #6bc25a;
+    color: #ff7e5f;
 }
 
 .reports-dropdown {
     position: relative;
-    display: inline-block;
 }
 
 .reports-button {
-    background: none;
-    border: none;
+    background: transparent;
     color: white;
-    font-family: 'Poppins', sans-serif;
+    border: none;
     font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
     font-weight: bold;
-    padding: 5px 10px;
+    cursor: pointer;
 }
 
-.reports-button :hover {
-    background-color: #6bc25a;
+.reports-button:hover {
+    color: #ff7e5f;
 }
 
 .reports-menu {
     position: absolute;
-    background-color: white;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    width: 150px;
-    top: 35px;
+    top: 40px;
     left: 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-.reports-menu a {
-    padding: 10px;
-    color: black;
-    text-decoration: none;
+.reports-dropdown:hover .reports-menu {
     display: block;
 }
 
+.reports-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: black;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+}
+
 .reports-menu a:hover {
-    background-color: #6bc25a;
+    background: #ff7e5f;
+    color: white;
+}
+
+.logout-btn {
+    background: #ff4b5c;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #d63031;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -1,9 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthContext } from "./context/authContext";
 import LandingPage from "./components/landingPage";
-import Login from "./components/login";
-import Register from "./components/register";
 import AddOrder from "./components/addOrder";
 import Orders from "./components/orders";
 import MenuManagement from "./components/menuManagement";
@@ -28,9 +26,18 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
 };
 
 const App = () => {
+    const { user } = useContext(AuthContext);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/"; // Redirect to landing page on refresh
+        }
+    }, []);
+
     return (
         <>
-            <Header />
+            {user && <Header />}
             <Routes>
                 <Route path="/" element={<LandingPage />} />
 

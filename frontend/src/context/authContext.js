@@ -10,7 +10,10 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         const token = localStorage.getItem("token");
-        if (!token) return null;
+        if (!token) {
+            navigate("/"); // Redirect to landing page if no token found
+            return null;
+        }
 
         try {
             const res = await axios.get("http://127.0.0.1:5000/auth/me", {
@@ -39,7 +42,7 @@ export const AuthProvider = ({ children }) => {
                 navigate("/add-order"); // Redirect after successful login
             }
         } catch (error) {
-            console.error("❌ Login failed:", error);
+            console.error("Login failed:", error);
         }
     };
 
@@ -52,13 +55,13 @@ export const AuthProvider = ({ children }) => {
                 });
             }
         } catch (error) {
-            console.error("❌ Logout failed:", error);
+            console.error("Logout failed:", error);
         }
 
         localStorage.removeItem("token");
         localStorage.removeItem("role");
         setUser(null);
-        navigate("/login");
+        navigate("/");
     };
 
     useEffect(() => {

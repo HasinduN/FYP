@@ -1,4 +1,3 @@
-/* Container styles */
 .add-order-container {
     display: flex;
     flex-direction: row;
@@ -9,7 +8,6 @@
     background-color: #ffffff;
 }
 
-/* Menu Section */
 .menu-section,
 .order-summary-section,
 .ongoing-orders-section {
@@ -75,7 +73,6 @@
     color: white;
 }
 
-/* Order Summary Section */
 .order-summary-section label {
     display: block;
     margin-bottom: 10px;
@@ -127,7 +124,6 @@
     background-color: #6bc25a;
 }
 
-/* Ongoing Orders Section */
 .ongoing-orders-list {
     display: flex;
     flex-direction: column;
