@@ -46,6 +46,7 @@
 .date-filter button {
     background-color: #106100;
     color: white;
+    width: 180px;
     border: none;
     padding: 10px 15px;
     border-radius: 5px;

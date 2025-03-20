@@ -87,3 +87,23 @@ def logout():
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@auth_bp.route("/update-profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    """Update user's username and password"""
+    user_id = get_jwt_identity()
+    data = request.json
+
+    user = session.query(User).filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if "username" in data:
+        user.username = data["username"]
+
+    if "password" in data and data["password"]:
+        user.set_password(data["password"])
+
+    session.commit()
+    return jsonify({"message": "Profile updated successfully!"}), 200

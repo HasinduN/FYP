@@ -5,7 +5,6 @@ body {
     padding: 20px;
 }
 
-/* Container */
 .sales-report-container {
     max-width: 900px;
     margin: auto;
@@ -15,10 +14,9 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Headings */
 h1, h2 {
     text-align: center;
-    color: #333;
+    color: #106100;
 }
 
 h1 {
@@ -31,7 +29,6 @@ h2 {
     margin-top: 20px;
 }
 
-/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -53,7 +50,11 @@ tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-/* Loading and Error Messages */
+.date-picker-container button {
+    width: 20%;
+    margin-left: 10px;
+}
+
 .loading-text {
     text-align: center;
     font-size: 18px;
@@ -66,7 +67,6 @@ tr:nth-child(even) {
     color: red;
 }
 
-/* Charts */
 .chart-container {
     display: flex;
     justify-content: center;

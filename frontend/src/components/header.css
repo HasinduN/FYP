@@ -78,13 +78,60 @@
     color: white;
 }
 
-.logout-btn {
-    background: #ff4b5c;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
+.user-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 180px;
+    padding: 10px;
+    text-align: center;
+    z-index: 10;
+}
+
+.profile-info {
+    color: #000;
+    font-weight: bold;
+}
+
+.profile-role {
+    font-size: 14px;
+    color: gray;
+}
+
+.edit-profile-btn, .logout-btn {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
     border: none;
     cursor: pointer;
+}
+
+.edit-profile-btn {
+    background-color: #106100;
+    color: white;
+    border-radius: 5px;
+}
+
+.logout-btn {
+    background-color: #ff4b5c;
+    color: white;
+    border-radius: 5px;
 }
 
 .logout-btn:hover {

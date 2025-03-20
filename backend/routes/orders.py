@@ -126,84 +126,62 @@ def add_order():
         print(f"Error adding order: {e}")
         return jsonify({"error": str(e)}), 500
     
-@orders_bp.route('/orders/ongoing', methods=['GET'])
+@orders_bp.route("/orders/ongoing", methods=["GET"])
 def get_ongoing_orders():
+    """Fetch ongoing orders with their items"""
     try:
-        # Fetch ongoing orders sorted by timestamp (latest first)
-        orders = (
-            db_session.query(Order)
-            .filter_by(status=False)
-            .order_by(Order.timestamp.desc())  # Sorting by latest placed first
-            .all()
-        )
+        orders = db_session.query(Order).filter_by(status=False).all()
 
-        result = [
-            {
+        orders_data = []
+        for order in orders:
+            order_items = db_session.query(OrderItem, MenuItem).join(MenuItem).filter(OrderItem.order_id == order.id).all()
+            
+            items_list = [
+                {"menu_item_id": oi.OrderItem.menu_item_id, "name": oi.MenuItem.name, "quantity": oi.OrderItem.quantity, "price": oi.MenuItem.price}
+                for oi in order_items
+            ]
+
+            orders_data.append({
                 "id": order.id,
                 "type": order.type,
-                "table_number": order.table_number if order.type == "Dine-In" else None,
+                "table_number": order.table_number,
                 "total_price": order.total_price,
                 "timestamp": order.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                "items": [
-                    {
-                        "menu_item_id": item.menu_item_id,
-                        "name": item.menu_item.name,
-                        "price": item.menu_item.price,
-                        "quantity": item.quantity,
-                    }
-                    for item in order.order_items  # Ensure items are included
-                ],
-            }
-            for order in orders
-        ]
-        return jsonify(result), 200
+                "items": items_list
+            })
+
+        return jsonify(orders_data), 200
 
     except Exception as e:
-        db_session.rollback()
-        print(f"Error fetching ongoing orders: {e}")
         return jsonify({"error": str(e)}), 500
     
-@orders_bp.route('/orders/<int:order_id>', methods=['PUT'])
+@orders_bp.route("/orders/update/<int:order_id>", methods=["PUT"])
 def update_order(order_id):
+    """Update an existing order by adding new items"""
     try:
         data = request.json
-        items = data['items']
+        order = db_session.query(Order).filter_by(id=order_id).first()
 
-        # Fetch the existing order
-        order = db_session.query(Order).get(order_id)
         if not order:
             return jsonify({"error": "Order not found"}), 404
-        if order.status:
-            return jsonify({"error": "Cannot update a completed order"}), 400
+
+        # Clear existing items
+        db_session.query(OrderItem).filter_by(order_id=order_id).delete()
 
         # Add new items to the order
-        for item in items:
-            existing_item = db_session.query(OrderItem).filter_by(
-                order_id=order_id,
-                menu_item_id=item['menu_item_id']
-            ).first()
-            if existing_item:
-                # Update quantity if the item already exists in the order
-                existing_item.quantity += item['quantity']
-            else:
-                # Add a new item
-                new_order_item = OrderItem(
-                    order_id=order_id,
-                    menu_item_id=item['menu_item_id'],
-                    quantity=item['quantity']
-                )
-                db_session.add(new_order_item)
+        for item in data["items"]:
+            new_item = OrderItem(order_id=order_id, menu_item_id=item["menu_item_id"], quantity=item["quantity"])
+            db_session.add(new_item)
 
-        # Update the total price
-        for item in items:
-            menu_item = db_session.query(MenuItem).get(item['menu_item_id'])
-            order.total_price += menu_item.price * item['quantity']
-
+        # Update total price
+        total_price = sum(item["quantity"] * item["price"] for item in data["items"])
+        order.total_price = total_price
         db_session.commit()
+
         return jsonify({"message": "Order updated successfully!"}), 200
+
     except Exception as e:
         db_session.rollback()
-        print(f"Error updating order: {e}")
         return jsonify({"error": str(e)}), 500
     
 @orders_bp.route('/orders/<int:order_id>/payment', methods=['POST'])

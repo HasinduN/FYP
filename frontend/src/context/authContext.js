@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
             setUser(res.data);
             return res.data;
         } catch (error) {
-            console.error("❌ Failed to fetch user:", error);
+            console.error("Failed to fetch user:", error);
             logout(); // Log out if fetching user fails
             return null;
         }
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        fetchUser();
+        if (!user) fetchUser();
     }, []);
 
     return (

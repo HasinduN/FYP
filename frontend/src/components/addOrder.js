@@ -37,16 +37,18 @@ const AddOrder = () => {
         try {
             const token = localStorage.getItem("access_token");
             const response = await axios.get("http://127.0.0.1:5000/orders/ongoing", {
-                headers: {Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
+    
             const sortedOrders = response.data.sort(
                 (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
             );
+    
             setOngoingOrders(sortedOrders);
         } catch (error) {
             toast.error("Error fetching ongoing orders!");
         }
-    };
+    };    
 
     const addItem = (menuItem) => {
         const existingItem = selectedItems.find((item) => item.id === menuItem.id);
@@ -114,23 +116,27 @@ const AddOrder = () => {
 
     const printKOT = async () => {
         if (!currentOrderId) {
-            toast.warn("Please place the order first!");
+            toast.warn("Please place or update the order first!");
             return;
         }
-
+    
+        // Update order before printing KOT
+        await updateOrder();
+    
         try {
             const token = localStorage.getItem("access_token");
-            await axios.post(`http://127.0.0.1:5000/orders/${currentOrderId}/kot`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` }
-                });
+            await axios.post(`http://127.0.0.1:5000/orders/${currentOrderId}/kot`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+    
             toast.success("KOT printed successfully!");
             setKotPrinted(true);
-            setAllowReprint(false); // Disable reprinting unless a new item is added
+            setAllowReprint(false);
         } catch (error) {
             toast.error("Error printing KOT!");
         }
     };
+    
 
     const processPayment = async () => {
         if (!paymentMethod) {
@@ -165,7 +171,35 @@ const AddOrder = () => {
         setOrderType(order.type);
         setTableNumber(order.table_number || "");
         setTotalPrice(order.total_price);
-        setKotPrinted(false); // Allow reprinting after edits
+        setKotPrinted(false); // Reset KOT print status
+    };
+
+    const updateOrder = async () => {
+        if (!currentOrderId) {
+            toast.warn("No order selected for update.");
+            return;
+        }
+    
+        const updatedOrderData = {
+            items: selectedItems.map((item) => ({
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                price: item.price,
+            })),
+        };
+    
+        try {
+            const token = localStorage.getItem("access_token");
+            await axios.put(`http://127.0.0.1:5000/orders/update/${currentOrderId}`, updatedOrderData, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+    
+            toast.success("Order updated successfully!");
+            setKotPrinted(true); // Allow KOT printing
+            fetchOngoingOrders(); // Refresh the ongoing orders list
+        } catch (error) {
+            toast.error("Error updating order!");
+        }
     };
 
     const completePayment = (order) => {
@@ -182,6 +216,8 @@ const AddOrder = () => {
         setKotPrinted(false);
         setPaymentMethod("");
         setAllowReprint(false);
+
+        fetchOngoingOrders();
     };
 
     return (
@@ -246,6 +282,11 @@ const AddOrder = () => {
                 >
                     PRINT KOT
                 </button>
+                {currentOrderId && (
+                    <button className="close-edit-btn" onClick={resetOrderForm}>
+                        CLOSE EDIT MODE
+                    </button>
+                )}
 
                 {/* Payment Section */}
                 {kotPrinted && (
@@ -276,16 +317,23 @@ const AddOrder = () => {
                     ) : (
                         ongoingOrders.map((order) => (
                             <div key={order.id} className="ongoing-order-card">
-                                <p>ORDER ID: {order.id}</p>
-                                <p>TYPE: {order.type}</p>
-                                <p>TOTAL: {order.total_price.toFixed(2)}</p>
+                                <p><strong>ORDER ID:</strong> {order.id}</p>
+                                <p><strong>TYPE:</strong> {order.type}</p>
+                                <p><strong>TOTAL:</strong> {order.total_price.toFixed(2)}</p>
+                                <p><strong>TABLE:</strong> {order.table_number || "N/A"}</p>
+
+                                <h4>Items:</h4>
+                                <ul>
+                                    {order.items.map((item) => (
+                                        <li key={item.menu_item_id}>
+                                            {item.name} - {item.quantity} x {item.price.toFixed(2)}
+                                        </li>
+                                    ))}
+                                </ul>
+
                                 <div className="ongoing-order-actions">
-                                    <button onClick={() => editOngoingOrder(order)}>
-                                        EDIT
-                                    </button>
-                                    <button onClick={() => completePayment(order)}>
-                                        COMPLETE PAYMENT
-                                    </button>
+                                    <button onClick={() => editOngoingOrder(order)}>EDIT</button>
+                                    <button onClick={() => completePayment(order)}>COMPLETE PAYMENT</button>
                                 </div>
                             </div>
                         ))

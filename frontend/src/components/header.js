@@ -2,12 +2,25 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import logo from "../assets/logo.jpg";
+import userIcon from "../assets/user.jpg";
+import EditProfileModal from "../components/editProfileModal";
 import "./header.css";
 
 const Header = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [showReports, setShowReports] = useState(false);
+
+    const toggleProfileDropdown = () => {
+        setShowProfileDropdown(!showProfileDropdown);
+    };
+
+    const openEditModal = () => {
+        setShowEditModal(true);
+        setShowProfileDropdown(false);
+    };
 
     const handleLogout = async () => {
         await logout();
@@ -43,8 +56,23 @@ const Header = () => {
                     )}
                 </div>
 
-                <button className="logout-btn" onClick={handleLogout}>LOGOUT</button>
+                <div className="user-profile">
+                    <img src={userIcon} alt="User" className="user-icon" onClick={toggleProfileDropdown} />
+                    {showProfileDropdown && (
+                        <div className="profile-dropdown">
+                            <p className="profile-info">{user?.username}</p>
+                            <p className="profile-role">{user?.role}</p>
+                            <button className="edit-profile-btn" onClick={openEditModal}>Edit Profile</button>
+                            <button className="logout-btn" onClick={logout}>Logout</button>
+                        </div>
+                    )}
+                </div>
+
             </nav>
+
+            {/* Edit Profile Modal */}
+            {showEditModal && <EditProfileModal onClose={() => setShowEditModal(false)} />}
+
         </header>
     );
 };
