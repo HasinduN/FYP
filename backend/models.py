@@ -25,7 +25,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(Enum("admin", "manager", "cashier", name="user_roles"), nullable=False, server_default="cashier")
+    role = Column(Enum("admin", "manager", "cashier", "head cheff", "cheff", "waiter", name="user_roles"), nullable=False, server_default="cashier")
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -49,6 +49,7 @@ class MenuItem(Base):
     name = Column(String, nullable=False)
     price = Column(Float, nullable=False)
     description = Column(String, nullable=True)
+    category = Column(Enum("Fried Rice", "Noodles", "Kottu", "Cheese Kottu", "Nasigoreng", "Side Dishes", "Beverages", "Deserts", name="menu_categories"), nullable=False)
 
     recipe = relationship("Recipe", back_populates="menu_item", cascade="all, delete-orphan")
 
@@ -112,6 +113,10 @@ class OrderItem(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     menu_item_id = Column(Integer, ForeignKey("menu_items.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
+
+    name = Column(String, nullable=False)  
+    price = Column(Float, nullable=False) 
+
     order = relationship("Order", back_populates="order_items")
     menu_item = relationship("MenuItem")
 

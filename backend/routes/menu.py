@@ -1,38 +1,58 @@
 from flask import Blueprint, jsonify, request
 from models import session as db_session, MenuItem, Order,OrderItem
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.decorators import role_required
 
 menu_bp = Blueprint("menu", __name__)
 
 #Fetch all menu items
-@menu_bp.route('/menu', methods=['GET'])
+@menu_bp.route("/menu", methods=["GET"])
 def get_menu():
+    """Fetch all menu items categorized"""
     try:
         menu_items = db_session.query(MenuItem).all()
-        result = [{"id": item.id, "name": item.name, "price": item.price, "description": item.description} for item in menu_items]
-        return jsonify(result)
-    except SQLAlchemyError as e:
-        db_session.rollback()
+        categorized_menu = {}
+
+        for item in menu_items:
+            category = item.category if item.category else "Uncategorized"
+            if category not in categorized_menu:
+                categorized_menu[category] = []
+            categorized_menu[category].append({
+                "id": item.id,
+                "name": item.name,
+                "price": item.price,
+                "description": item.description,
+                "category": item.category
+            })
+
+        return jsonify(categorized_menu), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-#Add a new menu item
 @menu_bp.route('/menu', methods=['POST'])
-@jwt_required()
-@role_required(["admin"])
 def add_menu_item():
     try:
         data = request.json
-        new_item = MenuItem(name=data['name'], price=data['price'], description=data.get('description'))
+
+        # Check if all required fields are provided
+        if not all(k in data for k in ("name", "price", "description", "category")):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        if data["category"] not in ["Fried Rice", "Noodles", "Kottu", "Cheese Kottu", "Nasigoreng", "Side Dishes", "Beverages", "Deserts"]:
+            return jsonify({"error": "Invalid category"}), 400
+
+        # Create new menu item
+        new_item = MenuItem(name=data["name"], price=data["price"], description = data.get("description", ""), category=data["category"])
         db_session.add(new_item)
         db_session.commit()
+
         return jsonify({"message": "Menu item added successfully!"}), 201
-    except SQLAlchemyError as e:
+    except Exception as e:
         db_session.rollback()
+        print(f"Error adding menu item: {e}")  # Debugging
         return jsonify({"error": str(e)}), 500
 
-#Update an existing menu item
 @menu_bp.route('/menu/<int:item_id>', methods=['PUT'])
 def update_menu_item(item_id):
     try:
@@ -46,6 +66,7 @@ def update_menu_item(item_id):
         item.name = data.get('name', item.name)
         item.price = data.get('price', item.price)
         item.description = data.get('description', item.description)
+        item.category = data.get('category', item.category)
 
         db_session.commit()
         return jsonify({"message": "Menu item updated successfully!"}), 200
@@ -53,27 +74,26 @@ def update_menu_item(item_id):
         db_session.rollback()
         return jsonify({"error": str(e)}), 500
 
-#Delete a menu item
-@menu_bp.route('/menu/<int:item_id>', methods=['DELETE'])
+@menu_bp.route("/menu/<int:item_id>", methods=["DELETE"])
 def delete_menu_item(item_id):
     try:
-        item = db_session.query(MenuItem).get(item_id)
+        # Check if the menu item is being used in orders
+        order_item_exists = db_session.query(OrderItem).filter_by(menu_item_id=item_id).first()
+        
+        if order_item_exists:
+            return jsonify({"error": "Cannot delete. Item is referenced in existing orders."}), 400
 
-        if not item:
-            return jsonify({"error": "Menu item not found"}), 404
+        # If not referenced, proceed with deletion
+        menu_item = MenuItem.query.get(item_id)
+        if menu_item:
+            db_session.delete(menu_item)
+            db_session.commit()
+            return jsonify({"message": "Menu item deleted successfully!"}), 200
+        else:
+            return jsonify({"error": "Menu item not found."}), 404
 
-        # Check if the item is part of any ongoing order
-        ongoing_order = db_session.query(OrderItem).join(Order).filter(
-            OrderItem.menu_item_id == item_id,
-            Order.status == False  # Ongoing orders only
-        ).first()
-
-        if ongoing_order:
-            return jsonify({"error": "Menu item cannot be deleted as it is part of an ongoing order."}), 400
-
-        db_session.delete(item)
-        db_session.commit()
-        return jsonify({"message": "Menu item deleted successfully!"}), 200
-    except Exception as e:
+    except IntegrityError:
         db_session.rollback()
+        return jsonify({"error": "Database integrity error. Item may still be referenced in orders."}), 500
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

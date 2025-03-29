@@ -1,5 +1,5 @@
 .inventory-container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
     text-align: center;
     font-family: 'Poppins', sans-serif;
@@ -22,5 +22,5 @@
 }
 
 .low-stock {
-    background-color: #ffdddd; /* Light red for low stock */
+    background-color: #ffdddd;
 }

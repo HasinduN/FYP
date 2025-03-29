@@ -15,6 +15,7 @@ const Login = ({ closeModal }) => {
         try {
             await login(username, password);
             closeModal();
+            
         } catch (err) {
             setError("Invalid credentials. Please try again.");
         }

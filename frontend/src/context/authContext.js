@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
-            navigate("/"); // Redirect to landing page if no token found
+            navigate("/");
             return null;
         }
 
@@ -20,11 +20,13 @@ export const AuthProvider = ({ children }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
+            console.log("Fetched User Data:", res.data);
+
             setUser(res.data);
             return res.data;
         } catch (error) {
             console.error("Failed to fetch user:", error);
-            logout(); // Log out if fetching user fails
+            logout();
             return null;
         }
     };
@@ -39,7 +41,32 @@ export const AuthProvider = ({ children }) => {
 
             const userData = await fetchUser();
             if (userData) {
-                navigate("/add-order"); // Redirect after successful login
+                console.log("Role Detected:", res.data.role);
+    
+                setTimeout(() => {
+                    switch (res.data.role) {
+                        case "admin":
+                            navigate("/add-order");
+                            break;
+                        case "manager":
+                            navigate("/add-order");
+                            break;
+                        case "cashier":
+                            navigate("/add-order");
+                            break;
+                        case "waiter":
+                            navigate("/add-order");
+                            break;
+                        case "head cheff":
+                            navigate("/inventory-management");
+                            break;
+                        case "cheff":
+                            navigate("/inventory-management");
+                            break;
+                        default:
+                            navigate("/");
+                    }
+                }, 100);
             }
         } catch (error) {
             console.error("Login failed:", error);
@@ -65,8 +92,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        if (!user) fetchUser();
-    }, []);
+        fetchUser();
+    }, []); 
 
     return (
         <AuthContext.Provider value={{ user, login, logout }}>

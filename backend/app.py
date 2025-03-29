@@ -17,7 +17,7 @@ app.config["JWT_SECRET_KEY"] = "edine"
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True)
 
-# ✅ Register the auth blueprint with "/auth" prefix
+#Register the auth blueprint with "/auth" prefix
 app.register_blueprint(auth_bp, url_prefix="/auth")
 
 app.register_blueprint(menu_bp)
@@ -29,7 +29,7 @@ app.register_blueprint(inventorymanagement_bp)
 app.register_blueprint(sales_prediction_bp)
 app.register_blueprint(inventory_prediction_bp)
 
-# ✅ Ensure token blocklist is checked for revoked tokens
+#Ensure token blocklist is checked for revoked tokens
 @jwt.token_in_blocklist_loader
 def check_if_token_is_revoked(jwt_header, jwt_payload):
     """Block blacklisted JWT tokens"""
@@ -43,4 +43,4 @@ def shutdown_session(exception=None):
     session.remove()
 
 if __name__ == "__main__":
-    app.run(debug=True)  # ✅ Restart the app to apply changes
+    app.run(debug=True)  #Restart the app to apply changes

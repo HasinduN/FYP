@@ -72,12 +72,14 @@ const Orders = () => {
                         {orders.map((order) => (
                             <tr
                                 key={order.id}
-                                className={order.status ? "completed-order" : "ongoing-order"}
+                                className={order.status === "Completed" ? "completed-order" : "ongoing-order"}
                             >
                                 <td>{order.id}</td>
                                 <td>{order.type}</td>
                                 <td>{order.total_price.toFixed(2)}</td>
-                                <td>{order.status ? "Completed" : "Ongoing"}</td>
+                                <td style={{ color: order.status === "Completed" ? "green" : "red" }}>
+                                    {order.status}
+                                </td>
                                 <td>
                                     <ul>
                                         {order.items.map((item, index) => (

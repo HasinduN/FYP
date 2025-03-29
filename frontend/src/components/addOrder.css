@@ -27,6 +27,89 @@
     color: #106100;
 }
 
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap; /* Allow categories to wrap to the next line */
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center; /* Center align categories */
+}
+
+.category-tabs button {
+    flex: 1 1 auto; /* Ensure buttons take up available space */
+    width: 40%;
+    background-color: #106100;
+    border: 1px solid #ddd;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.category-tabs button:hover {
+    background-color: #03ff3a;
+}
+
+.active-category {
+    background-color: #106100;
+    color: white;
+    border: none;
+}
+
+.active-category {
+    background-color: #106100;
+    color: white;
+    border: none;
+}
+
+.category-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.category-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.category-buttons button {
+    width: 30px;
+    background: #106100;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.category-buttons button:hover,
+.selected-category {
+    background: #03ff3a;
+}
+
+.menu-section {
+    text-align: left;
+}
+
+.menu-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    
+}
+
+.menu-item-card {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .menu-list {
     display: flex;
     flex-direction: column;
@@ -50,25 +133,22 @@
     color: #333333;
 }
 
-.menu-item-buttons button {
+.menu-item-card button {
+    width: 20%;
     padding: 5px 10px;
-    margin-left: 10px;
+    margin-right: 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
 }
 
-.menu-item-buttons button:hover {
-    background-color: #dddddd;
-}
-
-.menu-item-buttons button:first-child {
+.menu-item-card button:first-child {
     background-color: #106100;
     color: white;
 }
 
-.menu-item-buttons button:last-child {
+.menu-item-card button:last-child {
     background-color: #f44336;
     color: white;
 }
@@ -122,7 +202,7 @@
 }
 
 .order-summary-section button:hover {
-    background-color: #6bc25a;
+    background-color: #03ff3a;
 }
 
 .ongoing-orders-list {
@@ -169,7 +249,7 @@
 }
 
 .ongoing-order-actions button:hover {
-    background-color: #6bc25a;
+    background-color: #03ff3a;
 }
 
 /* Scrollbars */

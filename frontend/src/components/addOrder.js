@@ -6,6 +6,8 @@ import "./addOrder.css";
 
 const AddOrder = () => {
     const [menuItems, setMenuItems] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedItems, setSelectedItems] = useState([]);
     const [orderType, setOrderType] = useState("Takeaway");
     const [tableNumber, setTableNumber] = useState("");
@@ -17,19 +19,32 @@ const AddOrder = () => {
     const [allowReprint, setAllowReprint] = useState(false); // Allow reprinting KOT after changes
 
     useEffect(() => {
-        fetchMenuItems();
+        fetchMenuItems(selectedCategory);
         fetchOngoingOrders();
     }, []);
 
     const fetchMenuItems = async () => {
         try {
-            const token = localStorage.getItem("access_token"); // Retrieve stored JWT token
+            const token = localStorage.getItem("access_token");
             const response = await axios.get("http://127.0.0.1:5000/menu", {
-                headers: { Authorization: `Bearer ${token}` } // Add token to headers
+                headers: { Authorization: `Bearer ${token}` },
             });
-            setMenuItems(response.data);
+    
+            console.log("Menu API Response:", response.data); // Debugging
+            
+            if (typeof response.data === "object" && response.data !== null) {
+                setMenuItems(response.data);
+                setCategories(Object.keys(response.data));
+                setSelectedCategory(Object.keys(response.data)[0] || "");
+            } else {
+                setMenuItems({});
+                setCategories([]);
+                console.error("Unexpected API response format:", response.data);
+            }
         } catch (error) {
-            toast.error("Error fetching menu items!");
+            setMenuItems({});
+            setCategories([]);
+            console.error("Error fetching menu items:", error);
         }
     };
 
@@ -93,9 +108,13 @@ const AddOrder = () => {
 
         const orderData = {
             type: orderType,
+            total_price: totalPrice,
+            status: false,
             table_number: orderType === "Dine-In" ? tableNumber : null,
             items: selectedItems.map((item) => ({
                 menu_item_id: item.id,
+                name: item.name,
+                price: item.price,
                 quantity: item.quantity,
             })),
         };
@@ -226,18 +245,30 @@ const AddOrder = () => {
             {/* Menu Section */}
             <div className="menu-section">
                 <h2>MENU ITEMS</h2>
+
+                <div className="category-tabs">
+                    {categories.map((category) => (
+                        <button 
+                            key={category} 
+                            onClick={() => setSelectedCategory(category)}
+                            className={selectedCategory === category ? "active-category" : ""}
+                        >
+                            {category}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Menu List - Display Items for Selected Category */}
                 <div className="menu-list">
-                    {menuItems.map((item) => (
-                        <div key={item.id} className="menu-item-card">
-                            <p>
-                                {item.name} - {item.price.toFixed(2)}
-                            </p>
-                            <div className="menu-item-buttons">
+                    {menuItems[selectedCategory] &&
+                        menuItems[selectedCategory].map((item) => (
+                            <div key={item.id} className="menu-item-card">
+                                <p>{item.name} <br /> {item.price.toFixed(2)}</p>
                                 <button onClick={() => addItem(item)}>ADD</button>
                                 <button onClick={() => removeItem(item)}>REMOVE</button>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    }
                 </div>
             </div>
 

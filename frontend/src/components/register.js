@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../context/authContext";
 import "./authModal.css";
 
 const Register = ({ closeModal }) => {
+    const { user } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -22,10 +24,20 @@ const Register = ({ closeModal }) => {
         setSuccess("");
 
         try {
-            await axios.post("http://127.0.0.1:5000/auth/register", formData);
-            setSuccess("Registration successful! You can now log in.");
+            const token = localStorage.getItem("token"); // Get auth token
+    
+            if (!token) {
+                setError("Authentication failed. Please log in again.");
+                return;
+            }
+    
+            await axios.post("http://127.0.0.1:5000/auth/register", formData, {
+                headers: { Authorization: `Bearer ${token}` }, // Send token in request
+            });
+    
+            setSuccess("Registration successful!");
         } catch (err) {
-            setError("Username or Email already exists.");
+            setError(err.response?.data?.msg || "An error occurred.");
         }
     };
 
@@ -41,6 +53,9 @@ const Register = ({ closeModal }) => {
                     <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
                     <select name="role" onChange={handleChange}>
                         <option value="cashier">Cashier</option>
+                        <option value="head cheff">Head Cheff</option>
+                        <option value="cheff">Cheff</option>
+                        <option value="waiter">Waiter</option>
                         <option value="manager">Manager</option>
                         <option value="admin">Admin</option>
                     </select>

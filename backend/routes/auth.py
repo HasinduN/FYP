@@ -26,11 +26,17 @@ def get_current_user():
         return jsonify({"error": str(e)}), 500
 
 @auth_bp.route("/register", methods=["POST"])
+@jwt_required()
 def register():
-    """Register a new user with unique username and email"""
+    current_user_id = get_jwt_identity()
+
     data = request.json
 
     try:
+        current_user = session.query(User).filter_by(id=int(current_user_id)).first()
+        if not current_user or current_user.role != "admin":
+            return jsonify({"error": "Access denied. Only admins can register users."}), 403
+
         # Check if the username already exists
         existing_username = session.query(User).filter_by(username=data["username"]).first()
         if existing_username:
@@ -42,7 +48,10 @@ def register():
             return jsonify({"message": "Email already exists!"}), 400
 
         # Create new user
-        new_user = User(username=data["username"], email=data["email"], role=data["role"])
+        new_user = User(
+            username=data["username"], 
+            email=data["email"], 
+            role=data["role"])
         new_user.set_password(data["password"])
 
         session.add(new_user)

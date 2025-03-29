@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Login from "./login";
-import Register from "./register";
 import "./landingPage.css";
 
 const LandingPage = () => {
@@ -16,15 +15,11 @@ const LandingPage = () => {
                     <button className="primary-btn" onClick={() => setActiveModal("login")}>
                         Login
                     </button>
-                    <button className="secondary-btn" onClick={() => setActiveModal("register")}>
-                        Register
-                    </button>
                 </div>
             </div>
 
             {/* Conditional Rendering of Modals */}
             {activeModal === "login" && <Login closeModal={() => setActiveModal(null)} />}
-            {activeModal === "register" && <Register closeModal={() => setActiveModal(null)} />}
         </div>
     );
 };

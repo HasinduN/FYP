@@ -1,0 +1,150 @@
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #106100;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+}
+
+.sidebar-logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar-logo img {
+    width: 120px;
+    border-radius: 5px;
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.username {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.user-role {
+    font-size: 14px;
+    color: #ddd;
+}
+
+/* Navigation */
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 15px;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+.nav a:hover {
+    background: #03ff3a;
+}
+
+.reports-dropdown {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.reports-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+}
+
+.reports-button:hover {
+    background: #03ff3a;
+}
+
+.reports-menu {
+    background: white;
+    border-radius: 6px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.reports-menu a {
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+}
+
+.reports-menu a:hover {
+    background: #03ff3a;
+    color: white;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    text-align: center;
+    padding-bottom: 30px;
+}
+
+.edit-profile-btn, .logout-btn {
+    width: 80%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.edit-profile-btn {
+    background-color: #ffcc00;
+    color: black;
+}
+
+.logout-btn {
+    background-color: #ff4b5c;
+    color: white;
+}
+
+.logout-btn:hover {
+    background: #d63031;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.app-container.no-sidebar .main-content {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-content {
+    flex-grow: 1;
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    overflow: hidden;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
