@@ -43,7 +43,7 @@ const EditProfileModal = ({ onClose }) => {
 
                 <div className="modal-actions">
                     <button onClick={handleSave}>Save</button>
-                    <button onClick={onClose}>Cancel</button>
+                    <button className="cancel-btn" onClick={onClose}>Cancel</button>
                 </div>
             </div>
         </div>

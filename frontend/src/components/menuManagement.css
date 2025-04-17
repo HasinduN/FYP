@@ -1,10 +1,12 @@
 .menu-management-container {
-    width: 1000px;
+    width: 100%;
     margin: auto;
     text-align: center;
     font-family: 'Poppins', sans-serif;
     padding: 20px;
     border-radius: 10px;
+    max-height: 90vh;
+    overflow-y: scroll;
 }
 
 .menu-management-container h1 {
@@ -69,7 +71,6 @@
     margin: 20px;
 }
 
-/* Table Styling */
 .menu-table {
     width: 100%;
     border-collapse: collapse;
@@ -79,7 +80,6 @@
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Headers */
 .menu-table th {
     background-color: #106100;
     color: white;

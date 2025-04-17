@@ -1,195 +1,208 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Bar, Pie, Line } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import { saveAs } from "file-saver";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Line } from "react-chartjs-2";
+import {
+    Chart as ChartJS,
+    LineElement,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    Tooltip,
+    Legend
+} from "chart.js";
 import "./salesReport.css";
 
-const API_BASE_URL = "http://127.0.0.1:5000";
-const SALES_REPORT_ENDPOINT = `${API_BASE_URL}/sales-report`;
-const PREDICT_SALES_ENDPOINT = `${API_BASE_URL}/predict-sales`;
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
 const SalesReport = () => {
-    const [reportData, setReportData] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [predictedSalesLoading, setPredictedSalesLoading] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [predictedSales, setPredictedSales] = useState([]);
+    const [salesData, setSalesData] = useState({
+        daily_item_sales: [],
+        daily_sales: [],
+        order_type_sales: [],
+        sales_trends: [],
+        top_items: [],
+        order_details: []
+    });
+    const [loading, setLoading] = useState(false);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     useEffect(() => {
         fetchSalesReport();
-        fetchPredictedSales();
     }, []);
 
     const fetchSalesReport = async () => {
         try {
             setLoading(true);
-            setError(null);
-            const formattedDate = formatDate(selectedDate);
-            const response = await axios.get(`${SALES_REPORT_ENDPOINT}?date=${formattedDate}`);
-            setReportData(response.data);
+            let url = "http://127.0.0.1:5000/sales-report";
+
+            if (startDate && endDate) {
+                const start = startDate.toISOString().split("T")[0];
+                const end = endDate.toISOString().split("T")[0];
+                url += `?start_date=${start}&end_date=${end}`;
+            }
+
+            const response = await axios.get(url);
+            setSalesData(response.data || {});
         } catch (error) {
             console.error("Error fetching sales report:", error);
-            setError("Failed to load sales report.");
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchPredictedSales = async () => {
-        try {
-            setPredictedSalesLoading(true);
-            const response = await axios.get(PREDICT_SALES_ENDPOINT);
-            setPredictedSales(formatPredictedSales(response.data)); // Convert format before setting state
-        } catch (error) {
-            console.error("Error fetching predicted sales:", error);
-            setPredictedSales([]);
-        } finally {
-            setPredictedSalesLoading(false);
-        }
+    const downloadReport = () => {
+        const csvContent = [
+            ["Item Name", "Total Sold", "Total Revenue"],
+            ...salesData.daily_item_sales.map((sale) => [
+                sale.item_name, sale.total_sold, sale.total_revenue
+            ])
+        ]
+            .map((row) => row.join(","))
+            .join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        saveAs(blob, "SalesReport.csv");
     };
 
-    const formatPredictedSales = (data) => {
-        const salesMap = {};
-        const uniqueDates = [...new Set(data.map((item) => item.date))].sort();
+    const downloadOrderSummary = () => {
+        const csvContent = [
+          ["Order ID", "Date", "Total Sale"],
+          ...salesData.order_details.map(order => [
+            `"${order.order_id}"`,
+            `"${order.date}"`,
+            `"${order.total_sale?.toFixed(2)}"`
+          ])
+        ]
+          .map(row => row.join(","))
+          .join("\n");
+      
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        saveAs(blob, "OrderSummary.csv");
+      };      
 
-        data.forEach(({ date, item_name, predicted_sales }) => {
-            if (!salesMap[item_name]) {
-                salesMap[item_name] = {};
+    const dailySales = salesData?.daily_sales?.[0] || {};
+
+    const chartData = {
+        labels: salesData.sales_trends.map(trend => trend.date),
+        datasets: [
+            {
+                label: "Sales (Last 7 Days)",
+                data: salesData.sales_trends.map(trend => trend.sales_amount),
+                fill: false,
+                borderColor: "rgba(75,192,192,1)",
+                tension: 0.1,
             }
-            salesMap[item_name][date] = predicted_sales;
-        });
-
-        return { salesMap, uniqueDates };
+        ]
     };
-
-    const downloadCSV = () => {
-        if (!reportData?.daily_item_sales?.length) {
-            alert("No sales data available for this date.");
-            return;
-        }
-
-        let csvContent = "data:text/csv;charset=utf-8,Item Name,Quantity Sold,Total Revenue\n";
-        reportData.daily_item_sales.forEach((row) => {
-            csvContent += `${escapeCSVValue(row.item_name)},${row.total_sold},${row.total_revenue}\n`;
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Sales_Report_${formatDate(selectedDate)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-    };
-
-    const formatDate = (date) => date.toISOString().split("T")[0];
-    const escapeCSVValue = (value) => `"${value.replace(/"/g, '""')}"`;
-
-    if (loading) return <p>Loading Sales Report...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
-        <div className="sales-report-container">
-            <h1>Sales Report</h1>
+        <div className="sales-container">
+            <h1>SALES REPORT</h1>
 
-            {/* Date Selector */}
-            <div className="date-picker-container">
-                <label>Select Date: </label>
-                <DatePicker selected={selectedDate} onChange={(date) => setSelectedDate(date)} />
-                <button onClick={downloadCSV}>Download CSV</button>
-            </div>
-
-            {/* Predicted Sales */}
-            <h2>Predicted Sales for the Next 3 Days</h2>
-            {predictedSalesLoading ? (
-                <p>Loading predicted sales...</p>
-            ) : predictedSales?.uniqueDates?.length > 0 ? (
-                <table className="predicted-sales-table">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            {predictedSales.uniqueDates.map((date, index) => (
-                                <th key={index}>{date}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(predictedSales.salesMap).map(([item, sales], rowIndex) => (
-                            <tr key={rowIndex}>
-                                <td>{item}</td>
-                                {predictedSales.uniqueDates.map((date, colIndex) => (
-                                    <td key={colIndex}>{sales[date] ?? "-"}</td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No predicted sales data available.</p>
-            )}
-
-            {/* Daily Sales Report */}
-            <h2>Items Sold on {selectedDate.toDateString()}</h2>
-            {reportData?.daily_item_sales?.length > 0 ? (
-                <table className="sales-table">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Quantity Sold</th>
-                            <th>Total Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {reportData.daily_item_sales.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.item_name}</td>
-                                <td>{row.total_sold}</td>
-                                <td>{row.total_revenue}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No sales data available for this date.</p>
-            )}
-
-            {/* Sales Trend Line Chart */}
-            <h2>Sales Trends (Last 7 Days)</h2>
-            <div className="chart-container">
-                <Line
-                    data={{
-                        labels: reportData?.sales_trends?.map((row) => row.date),
-                        datasets: [
-                            {
-                                label: "Sales Amount (Rs.)",
-                                data: reportData?.sales_trends?.map((row) => row.sales_amount),
-                                backgroundColor: "rgba(54, 162, 235, 0.5)",
-                                borderColor: "rgba(54, 162, 235, 1)",
-                            },
-                        ],
+            <div className="datepicker-wrapper">
+                <DatePicker
+                    selectsRange={true}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(dates) => {
+                        const [start, end] = dates;
+                        setStartDate(start);
+                        setEndDate(end);
                     }}
-                    options={{ maintainAspectRatio: false, responsive: true }}
+                    showClearButton={false}
+                    placeholderText="Select date range"
+                    maxDate={new Date()}
+                    dateFormat="yyyy-MM-dd"
                 />
+                <button onClick={fetchSalesReport} className="filter-btn">Filter</button>
             </div>
 
-            {/* Sales by Order Type */}
-            <h2>Sales by Order Type</h2>
-            <div className="chart-container">
-                <Pie
-                    data={{
-                        labels: reportData?.order_type_sales?.map((row) => row.order_type),
-                        datasets: [
-                            {
-                                data: reportData?.order_type_sales?.map((row) => row.total_sales),
-                                backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"],
-                            },
-                        ],
-                    }}
-                    options={{ maintainAspectRatio: false, responsive: true }}
-                />
-            </div>
+            {loading ? (
+                <p>Loading sales data...</p>
+            ) : (
+                <>
+                    <h2>Overall Sales</h2>
+                    {dailySales?.total_sales ? (
+                        <div className="summary">
+                            <p><strong>Total Sales:</strong> {dailySales.total_sales}</p>
+                            <p><strong>Total Orders:</strong> {dailySales.total_orders}</p>
+                            <p><strong>Avg Order Value:</strong> {dailySales.avg_order_value?.toFixed(2)}</p>
+                        </div>
+                    ) : (
+                        <p>No sales recorded.</p>
+                    )}
+
+                    <div className="head">
+                        <h2>Orders Summary</h2>
+                        <button className="download-btn" onClick={downloadOrderSummary}>Download Report</button>
+                    </div>
+                    <div className="table-wrapper">
+                        {Array.isArray(salesData.order_details) && salesData.order_details.length > 0 ? (
+                            <table className="sales-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Total Sale</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {salesData.order_details.map((order, index) => (
+                                        <tr key={index}>
+                                            <td>{order.order_id}</td>
+                                            <td>{order.date}</td>
+                                            <td>{order.total_sale?.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No orders found for the selected range.</p>
+                        )}
+                    </div>
+                    <div className="head">
+                        <h2>Item-wise Sales</h2>
+                        <button className="download-btn" onClick={downloadReport}>Download Report</button>
+                    </div>
+                    <div className="table-wrapper">
+                        {Array.isArray(salesData.daily_item_sales) && salesData.daily_item_sales.length > 0 ? (
+                            <table className="sales-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Total Sold</th>
+                                        <th>Total Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {salesData.daily_item_sales.map((sale, index) => (
+                                        <tr key={index}>
+                                            <td>{sale.item_name}</td>
+                                            <td>{sale.total_sold}</td>
+                                            <td>{sale.total_revenue.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No item-wise sales data available.</p>
+                        )}
+                    </div>
+
+                    <h2>Sales Trend</h2>
+                    {salesData.sales_trends.length > 0 ? (
+                        <div className="chart-container">
+                            <Line data={chartData} />
+                        </div>
+                    ) : (
+                        <p>No sales trend data available.</p>
+                    )}
+                </>
+            )}
         </div>
     );
 };

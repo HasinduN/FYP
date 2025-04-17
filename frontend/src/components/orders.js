@@ -9,7 +9,7 @@ import "./orders.css";
 const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [dateRange, setDateRange] = useState([null, null]); // Stores start & end date
+    const [dateRange, setDateRange] = useState([]); // Stores start & end date
     const [startDate, endDate] = dateRange; // Destructure start and end date
 
     useEffect(() => {
@@ -38,6 +38,7 @@ const Orders = () => {
     return (
         <div className="orders-container">
             <ToastContainer />
+            <div className="head">
             <h1>ORDERS</h1>
 
             {/* Date Range Filter with Single Calendar */}
@@ -52,6 +53,7 @@ const Orders = () => {
                     placeholderText="Select date range"
                 />
                 <button onClick={fetchOrders}>Filter</button>
+            </div>
             </div>
 
             {loading ? (

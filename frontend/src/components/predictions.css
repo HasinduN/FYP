@@ -1,0 +1,88 @@
+.predictions-container {
+    padding: 20px;
+    max-width: 100%;
+    margin: auto;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Table Styling */
+.prediction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-table th {
+    background-color: #106100;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.prediction-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+/* Alternating Row Colors */
+.prediction-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Prevent Overflow Issues */
+.table-container {
+    max-height: 80vh; /* Adjustable based on content */
+    overflow-y: auto;
+}
+
+/* Sticky Table Header */
+.prediction-table thead th {
+    position: sticky;
+    top: 0;
+    background: #106100;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* Toggle Button */
+.toggle-btn {
+    background-color: #106100;
+    color: white;
+    width: 300px;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background-color: #0d5100;
+}
+
+/* Date Picker */
+.datepicker-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.react-datepicker__input-container input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}

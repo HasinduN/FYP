@@ -1,48 +1,77 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, root_mean_squared_error
+import numpy as np
 import joblib
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.ensemble import GradientBoostingRegressor, StackingRegressor
+from sklearn.linear_model import Ridge
+from sklearn.neural_network import MLPRegressor
+import lightgbm as lgb
 
-# Load the processed data
-cleaned_data = pd.read_csv("E:/PROJECT/backend/data/cleaned_restaurant_sales_with_closed_dates.csv")
 
-# Check for NaN values
-print("NaN values in the data:")
-print(cleaned_data.isnull().sum())
+#LOAD DATA AND PREPROCESSING
+data_path = "./cleaned_restaurant_sales_with_closed_dates.csv"
+data = pd.read_csv(data_path, parse_dates=["Date"])
 
-# Fill NaN values (or drop them)
-cleaned_data = cleaned_data.fillna(0)  # Fill NaN with 0
-# cleaned_data = cleaned_data.dropna()  # Alternatively, drop rows with NaN
-
-# Feature selection
+#FEATURES
 features = ["Day_of_Week", "Month", "Weekend", "Unit_Price", "Restaurant_Closed"]
-X = cleaned_data[features]
-y = cleaned_data["Sales"]
+X = data[features]
+y = data["Sales"]
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#TRAIN/TEST SPLIT
+split_index = int(len(X) * 0.8)
+X_train, X_test = X.iloc[:split_index], X.iloc[split_index:]
+y_train, y_test = y.iloc[:split_index], y.iloc[split_index:]
 
-# Train model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
 
-# Save the model
-model_path = "E:/PROJECT/backend/ml_models/sales_prediction_model.pkl"
-joblib.dump(model, model_path)
+#SET UP BASE MODELS WITH IMPROVED HYPERPARAMETERS
 
-print(f"Model saved to: {model_path}")
+# Base model 1: LightGBM (gradient boosting)
+lgb_model = lgb.LGBMRegressor( n_estimators=500, learning_rate=0.03, num_leaves=31, random_state=42 )
 
-# Make predictions on the test set
-y_pred = model.predict(X_test)
+# Base model 2: Gradient Boosting Regressor
+gbr_model = GradientBoostingRegressor( n_estimators=500, learning_rate=0.03, max_depth=4, random_state=42 )
 
-# Check for NaN values in y_test and y_pred
-print("NaN values in y_test:", y_test.isnull().sum())
-print("NaN values in y_pred:", pd.Series(y_pred).isnull().sum())
+# Base model 3: MLP Regressor (a neural network)
+mlp_model = MLPRegressor( hidden_layer_sizes=(100, 100), activation='relu', solver='adam', max_iter=1000, random_state=42 )
 
-# Evaluate the model
+estimators = [ ('lgb', lgb_model), ('gbr', gbr_model), ('mlp', mlp_model) ]
+
+# Meta-model to combine the base learners
+meta_model = Ridge(alpha=1.0)
+
+stacking_regressor = StackingRegressor( estimators=estimators, final_estimator=meta_model, cv=5, passthrough=True, n_jobs=-1 )
+
+
+# BUILD A PIPELINE WITH SCALING, POLYNOMIAL FEATURES, AND THE STACKING ENSEMBLE
+
+pipeline = make_pipeline(
+    StandardScaler(),
+    # PolynomialFeatures creates interaction and quadratic terms.
+    # With include_bias=False the constant term is not added (since StandardScaler already centers the data).
+    PolynomialFeatures(degree=2, include_bias=False),
+    stacking_regressor
+)
+
+# TRAIN THE MODEL
+
+pipeline.fit(X_train, y_train)
+
+# EVALUATE THE MODEL ON THE HOLD‑OUT SET
+y_pred = pipeline.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
-rmse = root_mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
 
-print(f"Mean Absolute Error: {mae}")
-print(f"Root Mean Squared Error: {rmse}")
+print("Stacking Ensemble with Polynomial Features Evaluation:")
+print(f"Mean Absolute Error (MAE): {mae:.4f}")
+print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+print(f"R-squared (R^2): {r2:.4f}")
+
+
+# SAVE THE FINAL MODEL
+
+model_path = "sales_prediction_model.pkl"
+joblib.dump(pipeline, model_path)
+print(f"Model saved to: {model_path}")

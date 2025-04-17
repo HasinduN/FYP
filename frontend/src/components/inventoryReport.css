@@ -1,6 +1,7 @@
 .inventory-container {
     max-width: 1000px;
     margin: auto;
+    padding: 20px;
     text-align: center;
     font-family: 'Poppins', sans-serif;
 }
@@ -9,18 +10,62 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.inventory-table th, .inventory-table td {
+.inventory-table th,
+.inventory-table td {
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 12px 10px;
     text-align: center;
 }
 
 .inventory-table th {
     background-color: #f4f4f4;
+    font-weight: 600;
+    color: #333;
 }
 
-.low-stock {
-    background-color: #ffdddd;
+.inventory-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.low-stock td {
+    background-color: #ffefef;
+    color: #b30000;
+    font-weight: 500;
+}
+
+.download-btn {
+    background-color: #106100;
+    color: white;
+    width: 150px;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease;
+}
+
+.download-btn:hover {
+    background-color: #0b4d00;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.head h2 {
+    margin: 0;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.table-wrapper {
+    overflow-x: auto;
 }

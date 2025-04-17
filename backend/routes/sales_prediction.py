@@ -7,18 +7,19 @@ from models import session as db_session, MenuItem
 # Create Blueprint
 sales_prediction_bp = Blueprint("sales_prediction", __name__)
 
-# Load trained model
-model_path = "E:/PROJECT/backend/ml_models/sales_prediction_model.pkl"
+# Load trained model (ensure this path matches where your model is saved)
+model_path = "ml_models/sales_prediction_model.pkl"
 model = joblib.load(model_path)
 
-# Function to generate future features for each item
+# Function to generate future features for each menu item
 def generate_future_features(menu_items, days=3):
     today = datetime.today()
     future_dates = [today + timedelta(days=i) for i in range(days)]
     
-    # Create an empty DataFrame
+    # Create list to accumulate feature dictionaries
     future_data = []
 
+    # For each menu item and for each future date, create a feature dictionary
     for menu_item in menu_items:
         for date in future_dates:
             future_data.append({
@@ -34,21 +35,25 @@ def generate_future_features(menu_items, days=3):
 
     return pd.DataFrame(future_data)
 
-# API to predict sales per item
+# API endpoint to predict sales per menu item
 @sales_prediction_bp.route("/predict-sales", methods=["GET"])
 def predict_sales():
     try:
         # Fetch all menu items from the database
         menu_items = db_session.query(MenuItem).all()
         
-        # Generate future features
+        # Generate future features for the specified number of days (here, 3 days into the future)
         future_features = generate_future_features(menu_items)
-        input_features = future_features.drop(columns=["date", "menu_item_id", "item_name"])
 
-        # Make predictions
+        # Explicitly select and order the features expected by the model.
+        # The order here should match what was used in training: 
+        # "Day_of_Week", "Month", "Weekend", "Unit_Price", "Restaurant_Closed"
+        input_features = future_features[['Day_of_Week', 'Month', 'Weekend', 'Unit_Price', 'Restaurant_Closed']]
+
+        # Make predictions with the loaded model
         predictions = model.predict(input_features)
         
-        # Prepare the response
+        # Format the predictions to be sent as a JSON response
         prediction_results = []
         for i, pred in enumerate(predictions):
             prediction_results.append({
@@ -61,4 +66,5 @@ def predict_sales():
         return jsonify(prediction_results)
     
     except Exception as e:
+        # Catch any exceptions, log or print them if needed, and return a JSON error response
         return jsonify({"error": str(e)}), 500

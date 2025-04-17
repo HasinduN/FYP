@@ -18,7 +18,6 @@ const LandingPage = () => {
                 </div>
             </div>
 
-            {/* Conditional Rendering of Modals */}
             {activeModal === "login" && <Login closeModal={() => setActiveModal(null)} />}
         </div>
     );

@@ -9,7 +9,9 @@ import MenuManagement from "./components/menuManagement";
 import InventoryManagement from "./components/inventoryManagement";
 import SalesReport from "./components/salesReport";
 import InventoryReport from "./components/inventoryReport";
+import Predictions from "./components/predictions";
 import Sidebar from "./components/sidebar";
+import Register from "./components/register";
 
 const ProtectedRoute = ({ element, allowedRoles }) => {
     const { user } = useContext(AuthContext);
@@ -51,6 +53,8 @@ const App = () => {
                     <Route path="/inventory-management" element={<ProtectedRoute element={<InventoryManagement />} allowedRoles={["admin", "manager", "head cheff"]} />} />
                     <Route path="/sales-report" element={<ProtectedRoute element={<SalesReport />} allowedRoles={["admin", "manager", "cashier"]} />} />
                     <Route path="/inventory-report" element={<ProtectedRoute element={<InventoryReport />} allowedRoles={["admin", "manager", "head cheff"]} />} />
+                    <Route path="/predictions" element={<ProtectedRoute element={<Predictions />} allowedRoles={["admin", "manager", "head cheff"]} />} />
+                    <Route path="/register" element={<ProtectedRoute element={<Register />} allowedRoles={["admin"]} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             </div>

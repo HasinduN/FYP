@@ -1,7 +1,7 @@
 .sidebar {
     width: 250px;
     height: 100vh;
-    background-color: #106100;
+    background: linear-gradient(180deg, #106100, #054000);
     color: white;
     position: fixed;
     left: 0;
@@ -9,6 +9,8 @@
     display: flex;
     flex-direction: column;
     padding-top: 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out;
 }
 
 .sidebar-logo {
@@ -19,16 +21,27 @@
 .sidebar-logo img {
     width: 120px;
     border-radius: 5px;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-logo img:hover {
+    transform: scale(1.1);
 }
 
 .user-info {
+    padding: 5px;
     text-align: center;
-    margin-bottom: 20px;
+    border-radius: 8px;
+    background: rgba(228, 220, 220, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+    margin: 15px;
+    backdrop-filter: blur(5px);
 }
 
 .username {
     font-size: 18px;
     font-weight: bold;
+    color: #fff;
 }
 
 .user-role {
@@ -36,7 +49,6 @@
     color: #ddd;
 }
 
-/* Navigation */
 .nav {
     display: flex;
     flex-direction: column;
@@ -50,16 +62,18 @@
     font-size: 16px;
     padding: 10px;
     border-radius: 5px;
-    text-align: center;
+    text-align: left;
     transition: background 0.3s ease;
 }
 
 .nav a:hover {
-    background: #03ff3a;
+    background: #6ee989;
+    color: black;
+    transform: scale(1.05);
 }
 
 .reports-dropdown {
-    text-align: center;
+    text-align: left;
     margin-top: 10px;
 }
 
@@ -67,14 +81,18 @@
     background: none;
     border: none;
     color: white;
+    text-align: left;
     font-size: 16px;
     cursor: pointer;
     padding: 10px;
     width: 100%;
+    transition: background 0.3s ease;
 }
 
 .reports-button:hover {
-    background: #03ff3a;
+    background: #6ee989;
+    color: black;
+    transform: scale(1.05);
 }
 
 .reports-menu {
@@ -83,17 +101,20 @@
     margin-top: 5px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .reports-menu a {
     color: black;
     padding: 10px;
     text-decoration: none;
+    transition: all 0.3s ease;
 }
 
 .reports-menu a:hover {
-    background: #03ff3a;
-    color: white;
+    background: #6ee989;
+    color: black;
+    transform: scale(1.05);
 }
 
 .sidebar-bottom {
@@ -102,7 +123,7 @@
     padding-bottom: 30px;
 }
 
-.edit-profile-btn, .logout-btn {
+.edit-profile-btn, .logout-btn, .register-btn {
     width: 80%;
     padding: 10px;
     margin: 5px 0;
@@ -110,6 +131,11 @@
     cursor: pointer;
     font-size: 14px;
     border-radius: 5px;
+}
+
+.register-btn {
+    background-color: #ffcc00;
+    color: black;
 }
 
 .edit-profile-btn {

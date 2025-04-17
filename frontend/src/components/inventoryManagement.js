@@ -46,7 +46,6 @@ const InventoryManagement = () => {
     return (
         <div className="inventory-container">
             <ToastContainer />
-            <div className="inventory-header">
                 <h1>INVENTORY MANAGEMENT</h1>
                 <div className="add-item-form">
                     <input
@@ -74,7 +73,6 @@ const InventoryManagement = () => {
                     <button onClick={addInventoryItem} disabled={loading}>
                         {loading ? "Updating..." : "Add Item"}
                     </button>
-                </div>
             </div>
 
             <div className="inventory-list">

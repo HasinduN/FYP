@@ -49,7 +49,7 @@ def get_inventory_report():
         report_data = {
             "current_stock": stock_levels,
             "low_stock_alerts": low_stock,
-            "stock_additions": stock_trends  # Shows stock updates in the last 7 days
+            "stock_updates": stock_trends  # Shows stock updates in the last 7 days
         }
 
         return jsonify(report_data), 200

@@ -27,3 +27,7 @@
     justify-content: space-between;
     margin-top: 15px;
 }
+
+.cancel-btn {
+    background: red;
+}
