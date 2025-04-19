@@ -44,7 +44,9 @@
 .prediction-table thead th {
     position: sticky;
     top: 0;
-    background: #106100;
+    z-index: 1; /* Ensure it's lower than the calendar */
+    background-color: #106100;
+    color: white;
 }
 
 .head {
@@ -72,12 +74,13 @@
     background-color: #0d5100;
 }
 
-/* Date Picker */
 .datepicker-container {
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 15px 0;
+    position: relative;
+    z-index: 10;
 }
 
 .react-datepicker__input-container input {

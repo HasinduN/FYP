@@ -139,7 +139,6 @@ const AddOrder = () => {
             return;
         }
     
-        // Update order before printing KOT
         await updateOrder();
     
         try {

@@ -9,9 +9,8 @@ from datetime import datetime, timedelta
 # Create blueprint for inventory predictions
 inventory_prediction_bp = Blueprint("inventory_prediction", __name__)
 
-# ------------------------------------------------------------------------------
-# 1. Dictionaries Mapping Product Names to Their Corresponding Model Files
-# ------------------------------------------------------------------------------
+#Dictionaries Mapping Product Names to Their Corresponding Model Files
+
 monthly_models = {
     "Salt": "ml_models/monthly_model_Salt_Amount.pkl",
     "Pepper": "ml_models/monthly_model_Pepper_Amount.pkl",
@@ -44,9 +43,9 @@ frequent_models = {
     "Roti": "ml_models/frequent_restock_roti_model.pkl"
 }
 
-# ------------------------------------------------------------------------------
-# 2. Helper Functions for Preprocessing and Feature Engineering
-# ------------------------------------------------------------------------------
+
+# Helper Functions for Preprocessing and Feature Engineering
+
 
 def create_date_features(df, date_col="Date"):
     """
@@ -159,9 +158,9 @@ def generate_frequent_features(date_list):
     """
     return generate_features_for_date_range(date_list)
 
-# ------------------------------------------------------------------------------
-# 3. Prediction Route: Return All Predictions for a Given Date Range
-# ------------------------------------------------------------------------------
+
+# Prediction Route: Return All Predictions for a Given Date Range
+
 @inventory_prediction_bp.route("/predict-inventory", methods=["GET"])
 def predict_inventory():
     """
@@ -188,10 +187,10 @@ def predict_inventory():
         start_date_str = request.args.get("start_date")
         end_date_str = request.args.get("end_date")
         if start_date_str and end_date_str:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         else:
-            start_date = datetime.today()
+            start_date = datetime.today().date()
             end_date = start_date + timedelta(days=6)
         
         # Generate a list of dates within the specified range.

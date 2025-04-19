@@ -50,9 +50,9 @@ const Predictions = () => {
   // Function to switch tables
   const toggleTable = () => {
     if (showInventory) {
-      fetchSalesPredictions(); // Load sales predictions when switching back
+      fetchSalesPredictions();
     } else {
-      fetchInventoryPredictions(); // Load inventory predictions when switching
+      fetchInventoryPredictions();
     }
     setShowInventory(!showInventory);
   };

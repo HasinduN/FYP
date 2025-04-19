@@ -184,6 +184,54 @@ def update_order_status(order_id):
     except Exception as e:
         db_session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+# Update an existing order's items
+@orders_bp.route('/orders/update/<int:order_id>', methods=['PUT'])
+def update_order(order_id):
+    try:
+        data = request.json
+        updated_items = data.get("items", [])
+
+        if not updated_items:
+            return jsonify({"error": "No items provided to update"}), 400
+
+        order = db_session.query(Order).get(order_id)
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        # Clear existing items
+        db_session.query(OrderItem).filter_by(order_id=order_id).delete()
+
+        # Add new updated items
+        total_price = 0
+        for item in updated_items:
+            menu_item = db_session.query(MenuItem).get(item["menu_item_id"])
+            if not menu_item:
+                return jsonify({"error": f"Menu item with ID {item['menu_item_id']} not found"}), 400
+
+            quantity = item["quantity"]
+            price = item["price"]
+
+            order_item = OrderItem(
+                order_id=order_id,
+                menu_item_id=item["menu_item_id"],
+                quantity=quantity,
+                name=menu_item.name,
+                price=price
+            )
+            db_session.add(order_item)
+
+            total_price += price * quantity
+
+        # Update total price
+        order.total_price = total_price
+        db_session.commit()
+
+        return jsonify({"message": "Order updated successfully!"}), 200
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 # Print KOT (Kitchen Order Ticket)
 @orders_bp.route('/orders/<int:order_id>/kot', methods=['POST'])
