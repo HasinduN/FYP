@@ -1,70 +1,82 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import joblib
 import pandas as pd
+import re
 from datetime import datetime, timedelta
 from models import session as db_session, MenuItem
 
-# Create Blueprint
 sales_prediction_bp = Blueprint("sales_prediction", __name__)
 
-# Load trained model (ensure this path matches where your model is saved)
-model_path = "ml_models/sales_prediction_model.pkl"
-model = joblib.load(model_path)
+# cache loaded models in memory to avoid repeated disk I/O
+_models_cache = {}
 
-# Function to generate future features for each menu item
-def generate_future_features(menu_items, days=3):
-    today = datetime.today()
-    future_dates = [today + timedelta(days=i) for i in range(days)]
-    
-    # Create list to accumulate feature dictionaries
-    future_data = []
+def _safe_name(name: str) -> str:
+    """Convert an arbitrary item name into a filesystem‑safe basename."""
+    return re.sub(r'\W+', '_', name).strip('_')
 
-    # For each menu item and for each future date, create a feature dictionary
-    for menu_item in menu_items:
-        for date in future_dates:
-            future_data.append({
-                "date": date.strftime("%Y-%m-%d"),
-                "menu_item_id": menu_item.id,
-                "item_name": menu_item.name,
-                "Day_of_Week": date.weekday(),
-                "Month": date.month,
-                "Weekend": 1 if date.weekday() in [5, 6] else 0,
-                "Unit_Price": menu_item.price,
-                "Restaurant_Closed": 0
-            })
+def _get_model(item_name: str):
+    """
+    Load (and cache) the trained model for a given item.
+    Expects the file ml_models/sales_by_item/sales_model_<safe>.pkl to exist.
+    """
+    if item_name in _models_cache:
+        return _models_cache[item_name]
+    safe = _safe_name(item_name)
+    path = f"ml_models/sales_models/sales_by_item/sales_model_{safe}.pkl"
+    model = joblib.load(path)
+    _models_cache[item_name] = model
+    return model
 
-    return pd.DataFrame(future_data)
+def _generate_dates(days: int):
+    """Generate a list of datetime.date for today + next days-1."""
+    today = datetime.today().date()
+    return [today + timedelta(days=i) for i in range(days)]
 
-# API endpoint to predict sales per menu item
 @sales_prediction_bp.route("/predict-sales", methods=["GET"])
 def predict_sales():
-    try:
-        # Fetch all menu items from the database
-        menu_items = db_session.query(MenuItem).all()
-        
-        # Generate future features for the specified number of days (here, 3 days into the future)
-        future_features = generate_future_features(menu_items)
-
-        # Explicitly select and order the features expected by the model.
-        # The order here should match what was used in training: 
-        # "Day_of_Week", "Month", "Weekend", "Unit_Price", "Restaurant_Closed"
-        input_features = future_features[['Day_of_Week', 'Month', 'Weekend', 'Unit_Price', 'Restaurant_Closed']]
-
-        # Make predictions with the loaded model
-        predictions = model.predict(input_features)
-        
-        # Format the predictions to be sent as a JSON response
-        prediction_results = []
-        for i, pred in enumerate(predictions):
-            prediction_results.append({
-                "date": future_features.iloc[i]["date"],
-                "menu_item_id": int(future_features.iloc[i]["menu_item_id"]),
-                "item_name": future_features.iloc[i]["item_name"],
-                "predicted_sales": round(float(pred))
-            })
-
-        return jsonify(prediction_results)
+    """
+    Returns a list of:
+      { date, menu_item_id, item_name, predicted_sales }
+    for each menu item and for each of the next N days (default N=3).
     
+    Optional query parameter:
+      ?days=5   <-- to predict 5 days instead of 3
+    """
+    try:
+        days = int(request.args.get("days", 3))
+        future_dates = _generate_dates(days)
+
+        # pull all menu items once
+        menu_items = db_session.query(MenuItem).all()
+        results = []
+
+        for mi in menu_items:
+            # attempt to load the item‑specific model
+            try:
+                model = _get_model(mi.name)
+            except FileNotFoundError:
+                # no model for this item, skip
+                continue
+
+            # for each date, build the exact 5‑column input and predict
+            for dt in future_dates:
+                feat = pd.DataFrame([{
+                    "Day_of_Week": dt.weekday(),
+                    "Month":       dt.month,
+                    "Weekend":     1 if dt.weekday() in (5, 6) else 0,
+                    "Unit_Price":  mi.price,
+                    "Restaurant_Closed": 0
+                }])
+
+                pred = model.predict(feat)[0]
+                results.append({
+                    "date": dt.strftime("%Y-%m-%d"),
+                    "menu_item_id": mi.id,
+                    "item_name": mi.name,
+                    "predicted_sales": int(round(pred))
+                })
+
+        return jsonify(results)
+
     except Exception as e:
-        # Catch any exceptions, log or print them if needed, and return a JSON error response
         return jsonify({"error": str(e)}), 500

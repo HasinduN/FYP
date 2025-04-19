@@ -1,0 +1,34 @@
+Item,records,mae,rmse,r2,model_file
+Chicken Kottu,305,15.951118357793073,18.575915537879382,0.8775096478209956,ml_models/sales_by_item/sales_model_Chicken_Kottu.pkl
+Egg Kottu,304,2.2013627353795986,2.7808503941848466,0.7699327372064709,ml_models/sales_by_item/sales_model_Egg_Kottu.pkl
+Egg Noodles,305,0.803535368868167,0.9568610528554595,0.761088035055467,ml_models/sales_by_item/sales_model_Egg_Noodles.pkl
+Sausage Rice (Basmathi),305,3.8106317233733686,4.813288098971166,0.746888724899503,ml_models/sales_by_item/sales_model_Sausage_Rice_Basmathi.pkl
+Prawn Rice (Basmathi),305,0.8018658331710328,0.9978600657579143,0.7320587468169828,ml_models/sales_by_item/sales_model_Prawn_Rice_Basmathi.pkl
+Hot Dog,305,1.198982059892884,1.5874225749044935,0.7289690509039088,ml_models/sales_by_item/sales_model_Hot_Dog.pkl
+Mix Kottu,305,0.8283320801906067,1.0451844466069218,0.7277388096072757,ml_models/sales_by_item/sales_model_Mix_Kottu.pkl
+Jelly youghurt,305,2.283134727670412,3.0305226728840675,0.7242482384952278,ml_models/sales_by_item/sales_model_Jelly_youghurt.pkl
+Egg rice (Samba),305,3.088043475592774,3.8867110372337548,0.7086618210749428,ml_models/sales_by_item/sales_model_Egg_rice_Samba.pkl
+Double mix rice (Basmathi),305,1.7871685939946955,2.365872892192667,0.7046546192452212,ml_models/sales_by_item/sales_model_Double_mix_rice_Basmathi.pkl
+Nasi Goreng (Basmathi),305,0.9040672850262429,1.1171896877529175,0.6993638190752034,ml_models/sales_by_item/sales_model_Nasi_Goreng_Basmathi.pkl
+Dolphin Kottu,305,0.6559650199897454,0.7935205401382879,0.6976748247743121,ml_models/sales_by_item/sales_model_Dolphin_Kottu.pkl
+Chicken budget rice (Samba),305,4.778773113167535,6.46668892417592,0.6939246751416174,ml_models/sales_by_item/sales_model_Chicken_budget_rice_Samba.pkl
+Chicken Noodles,305,2.486049015981674,3.2760975018181466,0.6896617864531231,ml_models/sales_by_item/sales_model_Chicken_Noodles.pkl
+Milo,305,5.540040321091855,6.980298592877968,0.6538174321081777,ml_models/sales_by_item/sales_model_Milo.pkl
+Mix rice (Basmathi),305,4.045165694812007,5.08640466213907,0.6523294199508156,ml_models/sales_by_item/sales_model_Mix_rice_Basmathi.pkl
+Seven up,305,3.591953839716436,5.175746004604604,0.6473047459636698,ml_models/sales_by_item/sales_model_Seven_up.pkl
+Mix noodles,305,0.9374152985558062,1.1768126590323718,0.6241306800713822,ml_models/sales_by_item/sales_model_Mix_noodles.pkl
+Youghurt,305,1.5556484766083558,1.9107085117970866,0.6187085182873773,ml_models/sales_by_item/sales_model_Youghurt.pkl
+Set Menu (Samba),305,7.125932893465235,9.101054622391255,0.608136831595581,ml_models/sales_by_item/sales_model_Set_Menu_Samba.pkl
+Watalappan,305,6.788225820561976,9.984483388134304,0.603399340079987,ml_models/sales_by_item/sales_model_Watalappan.pkl
+Burger,305,1.9816314885698276,3.118665644647686,0.5864956630909194,ml_models/sales_by_item/sales_model_Burger.pkl
+Chicken mix rice (Samba),305,4.430589280031616,6.210138056605669,0.5748551388513905,ml_models/sales_by_item/sales_model_Chicken_mix_rice_Samba.pkl
+Vegetable Kottu,305,0.5335918446033432,0.6616907094629322,0.4071388180654487,ml_models/sales_by_item/sales_model_Vegetable_Kottu.pkl
+Pepsi,305,12.868940609939461,16.761593336179725,0.3503552583654801,ml_models/sales_by_item/sales_model_Pepsi.pkl
+Chicken Biriyani (Basmathi),305,1.9769088353367201,2.562801416086138,0.2878148374883823,ml_models/sales_by_item/sales_model_Chicken_Biriyani_Basmathi.pkl
+Vegetable Rice (Samba),305,0.8805875922015716,1.0830305506475324,0.2485251031165333,ml_models/sales_by_item/sales_model_Vegetable_Rice_Samba.pkl
+Seafood Rice (Basmathi),305,0.5499268924517247,0.7292924131203555,0.07864120852434597,ml_models/sales_by_item/sales_model_Seafood_Rice_Basmathi.pkl
+Cheese Chicken Kottu,305,0.8607556099523248,1.0208844153554808,-1.0010550908090439,ml_models/sales_by_item/sales_model_Cheese_Chicken_Kottu.pkl
+Mix rice (Samba),305,12.61029426701529,14.176177450763067,-1.2086631139110433,ml_models/sales_by_item/sales_model_Mix_rice_Samba.pkl
+Egg rice (Basmathi),305,28.90535392200603,30.40020120086001,-8.888444114943926,ml_models/sales_by_item/sales_model_Egg_rice_Basmathi.pkl
+Chicken mix rice(Basmathi),305,18.225349050372163,20.37933550147666,-36.22589321451994,ml_models/sales_by_item/sales_model_Chicken_mix_rice_Basmathi.pkl
+Sea food Kottu,305,9.150402203318754,11.704387840761251,-89.50955558931419,ml_models/sales_by_item/sales_model_Sea_food_Kottu.pkl
